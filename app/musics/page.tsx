@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
 import { supabase } from "@/lib/supabase";
 import type { Song } from "@/types/database";
+import { getRatingColor } from "@/lib/ratingColors";
 
 const SONGS_PER_PAGE = 50;
 
@@ -135,7 +136,10 @@ export default function MusicsPage() {
                 </div>
 
                 {/* Rating */}
-                <div className="w-24 h-24 bg-[#9FE870] flex items-center justify-center shrink-0">
+                <div 
+                  className="w-24 h-24 flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: getRatingColor(song.rating) }}
+                >
                   <span className="text-[40px] font-black">{song.rating}</span>
                 </div>
 

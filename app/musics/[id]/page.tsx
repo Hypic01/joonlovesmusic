@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import type { Song, Award } from "@/types/database";
+import { getRatingColor } from "@/lib/ratingColors";
 
 export default function SongDetailPage() {
   const params = useParams();
@@ -126,7 +127,10 @@ export default function SongDetailPage() {
               </div>
 
               {/* Rating */}
-              <div className="w-32 h-32 bg-[#9FE870] flex items-center justify-center shrink-0">
+              <div 
+                className="w-32 h-32 flex items-center justify-center shrink-0"
+                style={{ backgroundColor: getRatingColor(song.rating) }}
+              >
                 <span className="text-[64px] font-black">{song.rating}</span>
               </div>
             </div>
