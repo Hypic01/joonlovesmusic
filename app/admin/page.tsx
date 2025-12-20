@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
+// Force dynamic rendering to avoid build-time errors with environment variables
+export const dynamic = 'force-dynamic';
 import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
 import { supabase } from "@/lib/supabase";
