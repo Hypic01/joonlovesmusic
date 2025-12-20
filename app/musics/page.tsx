@@ -7,6 +7,9 @@ import { supabase } from "@/lib/supabase";
 import type { Song } from "@/types/database";
 import { getRatingColor } from "@/lib/ratingColors";
 
+// Force dynamic rendering to avoid build-time errors with Supabase
+export const dynamic = 'force-dynamic';
+
 const SONGS_PER_PAGE = 50;
 
 export default function MusicsPage() {
