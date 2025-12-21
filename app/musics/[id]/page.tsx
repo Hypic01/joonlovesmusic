@@ -129,15 +129,16 @@ export default function SongDetailPage() {
 
                 {/* Spotify Embed Player */}
                 {song.spotify_track_id && (
-                  <div className="mt-8">
+                  <div className="mt-16">
                     <iframe
                       src={`https://open.spotify.com/embed/track/${song.spotify_track_id}?utm_source=generator&theme=0`}
-                      width="240"
+                      width="300"
                       height="152"
                       frameBorder="0"
                       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                       loading="lazy"
                       title={`Spotify player for ${song.title}`}
+                      style={{ maxWidth: '100%' }}
                     />
                   </div>
                 )}
