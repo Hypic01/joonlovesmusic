@@ -136,6 +136,11 @@ export default function SongDetailPage() {
                     <h1 className="text-[56px] font-bold leading-none mb-2">
                       {song.title}
                     </h1>
+                    {song.album_name && (
+                      <p className="text-[24px] font-normal opacity-70 mb-1">
+                        {song.album_name}
+                      </p>
+                    )}
                     <p className="text-[32px] font-normal">{song.artist}</p>
                   </div>
 
