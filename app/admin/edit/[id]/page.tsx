@@ -197,17 +197,17 @@ export default function EditSongPage() {
         preview_url: formData.preview_url || null,
       };
 
-      console.log("Updating song with data:", updateData); // Debug log
+      const response = await fetch(`/api/songs/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updateData),
+      });
 
-      const { error, data } = await supabase
-        .from("songs")
-        .update(updateData)
-        .eq("id", id)
-        .select(); // Add select to return updated data
+      const result = await response.json();
 
-      console.log("Update result:", { error, data }); // Debug log
-
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update song");
+      }
 
       setMessage({ type: "success", text: "Song updated successfully!" });
 
