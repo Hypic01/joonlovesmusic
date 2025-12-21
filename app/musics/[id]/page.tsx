@@ -168,8 +168,8 @@ export default function SongDetailPage() {
                   <iframe
                     src={`https://open.spotify.com/embed/track/${song.spotify_track_id}?utm_source=generator&theme=0`}
                     className="w-full md:w-auto"
-                    width="472"
-                    height="100"
+                    width="708"
+                    height="150"
                     frameBorder="0"
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                     loading="lazy"
