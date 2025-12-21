@@ -15,15 +15,28 @@ export default function EditSongPage() {
   const id = params.id as string;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [fetchingSpotify, setFetchingSpotify] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [song, setSong] = useState<Song | null>(null);
   const [awards, setAwards] = useState<Award[]>([]);
+  const [spotifyUrl, setSpotifyUrl] = useState("");
   const [formData, setFormData] = useState({
     title: "",
     artist: "",
     rating: "",
     comment: "",
     cover_url: "",
+    spotify_track_id: "",
+    album_name: "",
+    release_date: "",
+    duration_ms: null as number | null,
+    explicit: false,
+    popularity: null as number | null,
+    isrc: "",
+    track_number: null as number | null,
+    disc_number: null as number | null,
+    album_type: "",
+    preview_url: "",
   });
 
   useEffect(() => {
@@ -58,6 +71,17 @@ export default function EditSongPage() {
           rating: songData.rating?.toString() || "",
           comment: songData.comment || "",
           cover_url: songData.cover_url || "",
+          spotify_track_id: songData.spotify_track_id || "",
+          album_name: songData.album_name || "",
+          release_date: songData.release_date || "",
+          duration_ms: songData.duration_ms || null,
+          explicit: songData.explicit || false,
+          popularity: songData.popularity || null,
+          isrc: songData.isrc || "",
+          track_number: songData.track_number || null,
+          disc_number: songData.disc_number || null,
+          album_type: songData.album_type || "",
+          preview_url: songData.preview_url || "",
         });
 
         // Fetch awards
@@ -79,6 +103,57 @@ export default function EditSongPage() {
     fetchSong();
   }, [id]);
 
+  const handleFetchFromSpotify = async () => {
+    if (!spotifyUrl.trim()) {
+      setMessage({ type: "error", text: "Please enter a Spotify URL" });
+      return;
+    }
+
+    setFetchingSpotify(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/spotify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: spotifyUrl }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch from Spotify");
+      }
+
+      // Auto-fill the form with Spotify data
+      setFormData({
+        ...formData,
+        title: data.title || formData.title,
+        artist: data.artist || formData.artist,
+        cover_url: data.cover_url || formData.cover_url,
+        spotify_track_id: data.spotify_track_id || formData.spotify_track_id,
+        album_name: data.album_name || formData.album_name,
+        release_date: data.release_date || formData.release_date,
+        duration_ms: data.duration_ms || formData.duration_ms,
+        explicit: data.explicit || formData.explicit,
+        popularity: data.popularity || formData.popularity,
+        isrc: data.isrc || formData.isrc,
+        track_number: data.track_number || formData.track_number,
+        disc_number: data.disc_number || formData.disc_number,
+        album_type: data.album_type || formData.album_type,
+        preview_url: data.preview_url || formData.preview_url,
+      });
+
+      setMessage({ type: "success", text: "Fetched Spotify data! Review and save." });
+      setSpotifyUrl(""); // Clear URL field
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch from Spotify";
+      setMessage({ type: "error", text: errorMessage });
+    } finally {
+      setFetchingSpotify(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -93,6 +168,17 @@ export default function EditSongPage() {
           rating: parseInt(formData.rating),
           comment: formData.comment || null,
           cover_url: formData.cover_url || null,
+          spotify_track_id: formData.spotify_track_id || null,
+          album_name: formData.album_name || null,
+          release_date: formData.release_date || null,
+          duration_ms: formData.duration_ms,
+          explicit: formData.explicit,
+          popularity: formData.popularity,
+          isrc: formData.isrc || null,
+          track_number: formData.track_number,
+          disc_number: formData.disc_number,
+          album_type: formData.album_type || null,
+          preview_url: formData.preview_url || null,
         })
         .eq("id", id);
 
@@ -186,6 +272,31 @@ export default function EditSongPage() {
               </p>
             </div>
           )}
+
+          {/* Spotify Fetch Section */}
+          <div className="mb-8 p-6 border-2 border-black bg-neutral-50">
+            <h2 className="text-[24px] font-bold mb-4">Update from Spotify</h2>
+            <p className="text-[16px] mb-4 opacity-70">
+              Paste a Spotify URL to update album name, release date, and other metadata
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={spotifyUrl}
+                onChange={(e) => setSpotifyUrl(e.target.value)}
+                placeholder="https://open.spotify.com/track/..."
+                className="flex-1 px-4 py-3 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red)"
+              />
+              <button
+                type="button"
+                onClick={handleFetchFromSpotify}
+                disabled={fetchingSpotify}
+                className="px-6 py-3 border-2 border-black bg-white hover:border-(--color-brand-red) font-semibold text-[18px] disabled:opacity-50 cursor-pointer"
+              >
+                {fetchingSpotify ? "Fetching..." : "Fetch from Spotify"}
+              </button>
+            </div>
+          </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
