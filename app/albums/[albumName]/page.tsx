@@ -107,7 +107,7 @@ export default function AlbumPage() {
 
                   {/* Song Info */}
                   <div className="flex-1">
-                    <h3 className="text-[32px] font-bold leading-none mb-1">
+                    <h3 className="text-[32px] font-bold leading-none">
                       {song.title}
                     </h3>
                     <p className="text-[18px] opacity-70">{song.artist}</p>

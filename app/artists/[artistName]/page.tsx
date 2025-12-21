@@ -138,7 +138,7 @@ export default function ArtistPage() {
 
                   {/* Song Info */}
                   <div className="flex-1">
-                    <h3 className="text-[32px] font-bold leading-none mb-1">
+                    <h3 className="text-[32px] font-bold leading-none">
                       {song.title}
                     </h3>
                     {song.album_name && (

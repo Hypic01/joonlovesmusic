@@ -160,12 +160,12 @@ export default function MusicsPage() {
 
                 {/* Song Info */}
                 <div className="flex-1">
-                  <h3 className="text-[32px] font-bold leading-none mb-1">
+                  <h3 className="text-[32px] font-bold leading-none">
                     {song.title}
                   </h3>
                   {song.album_name && (
                     <p
-                      className="text-[18px] font-normal opacity-70 mb-1 hover:underline cursor-pointer"
+                      className="text-[18px] font-normal opacity-70 hover:underline cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         router.push(`/albums/${encodeURIComponent(song.album_name)}`);
