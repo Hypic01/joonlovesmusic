@@ -7,7 +7,7 @@ import { supabase } from "@/lib/supabase";
 import type { Song, Award } from "@/types/database";
 import { getRatingColor } from "@/lib/ratingColors";
 
-// Force dynamic rendering to avoid build-time errors with Supabase
+// Force dynamic rendering to avoid build-time errors with environment variables
 export const dynamic = 'force-dynamic';
 
 export default function SongDetailPage() {
