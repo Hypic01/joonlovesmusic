@@ -143,12 +143,19 @@ export default function SongDetailPage() {
                           {song.album_name}
                         </p>
                       )}
-                      <p 
-                        className="text-[32px] font-normal hover:underline cursor-pointer"
-                        onClick={() => router.push(`/artists/${encodeURIComponent(song.artist)}`)}
-                      >
-                        {song.artist}
-                      </p>
+                      <div className="text-[32px] font-normal">
+                        {song.artist.split(',').map((artist, index, array) => (
+                          <span key={index}>
+                            <span
+                              className="hover:underline cursor-pointer"
+                              onClick={() => router.push(`/artists/${encodeURIComponent(artist.trim())}`)}
+                            >
+                              {artist.trim()}
+                            </span>
+                            {index < array.length - 1 && <span>, </span>}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                     
                     {/* Release Date - Aligned to bottom */}

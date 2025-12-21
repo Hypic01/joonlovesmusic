@@ -159,15 +159,22 @@ export default function MusicsPage() {
                   <h3 className="text-[32px] font-bold leading-none mb-1">
                     {song.title}
                   </h3>
-                  <p 
-                    className="text-[20px] hover:underline cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      router.push(`/artists/${encodeURIComponent(song.artist)}`);
-                    }}
-                  >
-                    {song.artist}
-                  </p>
+                  <div className="text-[20px]">
+                    {song.artist.split(',').map((artist, index, array) => (
+                      <span key={index}>
+                        <span
+                          className="hover:underline cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/artists/${encodeURIComponent(artist.trim())}`);
+                          }}
+                        >
+                          {artist.trim()}
+                        </span>
+                        {index < array.length - 1 && <span>, </span>}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Rating */}
