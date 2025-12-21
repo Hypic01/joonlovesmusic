@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Navbar from "../components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
@@ -131,9 +132,10 @@ export default function MusicsPage() {
               </div>
             ) : (
               currentSongs.map((song) => (
-                <div
+                <Link
                   key={song.id}
-                  onClick={() => router.push(`/musics/${song.id}`)}
+                  href={`/musics/${song.id}`}
+                  prefetch={true}
                   className="flex items-center gap-4 p-4 border-2 border-black bg-white hover:border-(--color-brand-red) cursor-pointer"
                 >
                   {/* Rank */}
@@ -149,6 +151,8 @@ export default function MusicsPage() {
                       width={96}
                       height={96}
                       className="w-24 h-24 object-cover shrink-0"
+                      priority={song.rank <= 10}
+                      loading={song.rank <= 10 ? "eager" : "lazy"}
                     />
                   ) : (
                     <div className="w-24 h-24 bg-neutral-300 shrink-0" />
@@ -201,7 +205,7 @@ export default function MusicsPage() {
                       <polyline points="12 5 19 12 12 19" />
                     </svg>
                   </button>
-                </div>
+                </Link>
               ))
             )}
           </div>

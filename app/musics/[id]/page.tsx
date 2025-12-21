@@ -33,44 +33,30 @@ export default function SongDetailPage() {
   useEffect(() => {
     async function fetchSong() {
       try {
-        // Fetch song
-        const { data: songData, error: songError } = await supabase
-          .from("songs")
-          .select("*")
-          .eq("id", id)
-          .single();
+        // Fetch all data in parallel for better performance
+        const [
+          { data: songData, error: songError },
+          { data: awardsData, error: awardsError },
+          { data: historyData, error: historyError },
+          { data: commentHistoryData, error: commentHistoryError }
+        ] = await Promise.all([
+          supabase.from("songs").select("*").eq("id", id).single(),
+          supabase.from("awards").select("*").eq("song_id", id),
+          supabase.from("rating_history").select("*").eq("song_id", id).order("changed_at", { ascending: false }),
+          supabase.from("comment_history").select("*").eq("song_id", id).order("changed_at", { ascending: false })
+        ]);
 
+        // Check for errors
         if (songError) throw songError;
+        if (awardsError) throw awardsError;
+        if (historyError) throw historyError;
+        if (commentHistoryError) throw commentHistoryError;
+
+        // Set all data
         console.log("Fetched song data:", songData); // Debug log
         setSong(songData);
-
-        // Fetch awards for this song
-        const { data: awardsData, error: awardsError } = await supabase
-          .from("awards")
-          .select("*")
-          .eq("song_id", id);
-
-        if (awardsError) throw awardsError;
         setAwards(awardsData || []);
-
-        // Fetch rating history for this song
-        const { data: historyData, error: historyError } = await supabase
-          .from("rating_history")
-          .select("*")
-          .eq("song_id", id)
-          .order("changed_at", { ascending: false });
-
-        if (historyError) throw historyError;
         setRatingHistory(historyData || []);
-
-        // Fetch comment history for this song
-        const { data: commentHistoryData, error: commentHistoryError } = await supabase
-          .from("comment_history")
-          .select("*")
-          .eq("song_id", id)
-          .order("changed_at", { ascending: false });
-
-        if (commentHistoryError) throw commentHistoryError;
         setCommentHistory(commentHistoryData || []);
       } catch (error) {
         console.error("Error fetching song:", error);
@@ -88,7 +74,21 @@ export default function SongDetailPage() {
         <div className="relative z-10 h-full overflow-y-auto">
           <Navbar />
           <div className="max-w-[964px] mx-auto">
-            <p className="text-[24px] font-semibold">Loading...</p>
+            {/* Skeleton loader for better UX */}
+            <div className="animate-pulse">
+              <div className="flex items-start gap-6 mb-12">
+                {/* Album cover skeleton */}
+                <div className="w-60 h-60 bg-neutral-200 shrink-0" />
+                {/* Song info skeleton */}
+                <div className="flex-1 space-y-4">
+                  <div className="h-14 bg-neutral-200 w-3/4" />
+                  <div className="h-8 bg-neutral-200 w-1/2" />
+                  <div className="h-10 bg-neutral-200 w-2/3" />
+                </div>
+                {/* Rating skeleton */}
+                <div className="w-32 h-32 bg-neutral-200 shrink-0" />
+              </div>
+            </div>
           </div>
         </div>
       </main>
@@ -146,6 +146,7 @@ export default function SongDetailPage() {
                       height={240}
                       className="w-full object-cover"
                       style={{ aspectRatio: '1/1' }}
+                      priority
                     />
                   ) : (
                     <div className="w-full bg-neutral-300" style={{ aspectRatio: '1/1' }} />
