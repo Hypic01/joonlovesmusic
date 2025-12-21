@@ -95,6 +95,7 @@ export async function POST(request: NextRequest) {
       title,
       artist,
       cover_url,
+      spotify_track_id: trackId, // Include track ID for embedding
     });
   } catch (error) {
     console.error("Error fetching Spotify data:", error);

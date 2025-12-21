@@ -8,6 +8,7 @@ export interface Song {
   comment: string | null;
   created_at: string;
   updated_at?: string;
+  spotify_track_id?: string | null;
 }
 
 export interface Award {

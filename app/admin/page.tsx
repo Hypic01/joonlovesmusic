@@ -21,6 +21,7 @@ export default function AdminPage() {
     rating: "",
     comment: "",
     cover_url: "",
+    spotify_track_id: "",
   });
 
   useEffect(() => {
@@ -70,6 +71,7 @@ export default function AdminPage() {
         title: data.title || "",
         artist: data.artist || "",
         cover_url: data.cover_url || "",
+        spotify_track_id: data.spotify_track_id || "",
       });
 
       setMessage({ type: "success", text: "Song info fetched from Spotify!" });
@@ -113,6 +115,7 @@ export default function AdminPage() {
         rating: parseInt(formData.rating),
         comment: formData.comment || null,
         cover_url: formData.cover_url || null,
+        spotify_track_id: formData.spotify_track_id || null,
       });
 
       if (error) throw error;
@@ -124,6 +127,7 @@ export default function AdminPage() {
         rating: "",
         comment: "",
         cover_url: "",
+        spotify_track_id: "",
       });
 
       // Refresh after 1 second

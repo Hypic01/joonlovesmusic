@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
+import Image from "next/image";
 import type { Song, Award } from "@/types/database";
 import { getRatingColor } from "@/lib/ratingColors";
 
@@ -110,16 +111,36 @@ export default function SongDetailPage() {
 
             {/* Song Header */}
             <div className="flex items-start gap-6 mb-12">
-              {/* Album Cover */}
-              {song.cover_url ? (
-                <img
-                  src={song.cover_url}
-                  alt={`${song.title} cover`}
-                  className="w-64 h-64 object-cover shrink-0"
-                />
-              ) : (
-                <div className="w-64 h-64 bg-neutral-300 shrink-0" />
-              )}
+              {/* Album Cover and Spotify Player */}
+              <div className="w-64 shrink-0">
+                {/* Album Cover */}
+                {song.cover_url ? (
+                  <Image
+                    src={song.cover_url}
+                    alt={`${song.title} cover`}
+                    width={256}
+                    height={256}
+                    className="w-64 h-64 object-cover"
+                  />
+                ) : (
+                  <div className="w-64 h-64 bg-neutral-300" />
+                )}
+
+                {/* Spotify Embed Player */}
+                {song.spotify_track_id && (
+                  <div className="mt-4">
+                    <iframe
+                      src={`https://open.spotify.com/embed/track/${song.spotify_track_id}?utm_source=generator&theme=0`}
+                      width="100%"
+                      height="152"
+                      frameBorder="0"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      title={`Spotify player for ${song.title}`}
+                    />
+                  </div>
+                )}
+              </div>
 
               {/* Song Info */}
               <div className="flex-1">
@@ -129,27 +150,27 @@ export default function SongDetailPage() {
                 <p className="text-[32px] font-normal">{song.artist}</p>
               </div>
 
-              {/* Rating */}
-              <div 
-                className="w-32 h-32 flex items-center justify-center shrink-0"
-                style={{ backgroundColor: getRatingColor(song.rating) }}
-              >
-                <span className="text-[64px] font-black">{song.rating}</span>
+              {/* Rating with Last Updated */}
+              <div className="shrink-0">
+                <div 
+                  className="w-32 h-32 flex items-center justify-center"
+                  style={{ backgroundColor: getRatingColor(song.rating) }}
+                >
+                  <span className="text-[64px] font-black">{song.rating}</span>
+                </div>
+                {/* Last Updated */}
+                {song.updated_at && (
+                  <div className="text-[14px] opacity-60 mt-2 text-center">
+                    Last updated:<br />
+                    {new Date(song.updated_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Last Updated */}
-            {song.updated_at && (
-              <div className="text-[14px] opacity-60 mt-4">
-                Last updated: {new Date(song.updated_at).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </div>
-            )}
 
             {/* Awards Section */}
             {awards.length > 0 && (

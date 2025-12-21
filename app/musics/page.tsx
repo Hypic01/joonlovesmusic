@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
 import { supabase } from "@/lib/supabase";
+import Image from "next/image";
 import type { Song } from "@/types/database";
 import { getRatingColor } from "@/lib/ratingColors";
 
@@ -121,9 +122,11 @@ export default function MusicsPage() {
 
                   {/* Album Cover */}
                   {song.cover_url ? (
-                    <img
+                    <Image
                       src={song.cover_url}
                       alt={`${song.title} cover`}
+                      width={96}
+                      height={96}
                       className="w-24 h-24 object-cover shrink-0"
                     />
                   ) : (
