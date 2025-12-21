@@ -11,6 +11,9 @@ export default function HomePage() {
           <Link className="text-[32px] font-semibold hover:underline" href="/musics">
             see music ratings
           </Link>
+          <Link className="text-[32px] font-semibold hover:underline" href="/artist-rankings">
+            artists power rankings
+          </Link>
           <Link className="text-[32px] font-semibold hover:underline" href="/collections">
             when to listen what
           </Link>

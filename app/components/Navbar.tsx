@@ -17,6 +17,12 @@ export default function Navbar() {
           see music ratings
         </Link>
         <Link
+          href="/artist-rankings"
+          className="text-[18px] font-semibold hover:underline"
+        >
+          artists power rankings
+        </Link>
+        <Link
           href="/collections"
           className="text-[18px] font-semibold hover:underline"
         >

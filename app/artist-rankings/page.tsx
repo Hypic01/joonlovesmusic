@@ -158,7 +158,7 @@ export default function ArtistRankingsPage() {
 
         {/* Search Bar and Sort */}
         <div className="max-w-[964px] mx-auto mb-8">
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             {/* Search Input */}
             <div className="relative flex-1">
               <input
@@ -192,7 +192,7 @@ export default function ArtistRankingsPage() {
             <select
               value={sortBy}
               onChange={handleSortChange}
-              className="px-4 py-4 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red) cursor-pointer font-semibold"
+              className="px-4 py-4 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red) cursor-pointer font-semibold min-w-[240px]"
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
