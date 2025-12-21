@@ -33,7 +33,7 @@ export default function ArtistPage() {
         // Filter songs where the artist name appears in the artist field
         // Split by comma and check if any artist matches
         const filteredSongs = (data || []).filter((song) => {
-          const artists = song.artist.split(',').map((a) => a.trim());
+          const artists = song.artist.split(',').map((a: string) => a.trim());
           return artists.includes(artistName);
         });
 
