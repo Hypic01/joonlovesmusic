@@ -155,6 +155,43 @@ export default function CriteriaPage() {
               <div className="flex items-start gap-4">
                 <span className="text-[24px] mt-1">•</span>
                 <p>
+                  <span className="font-bold">
+                    A score like 62 might seem pretty low, but I set the average to be around 50, so don&apos;t be upset if you think the score is low!
+                  </span>
+                </p>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <span className="text-[24px] mt-1">•</span>
+                <p>
+                  <span className="font-bold">Ratings can really vary.</span> They can vary depending on the time, place, how you feel, what situation you are going through in your life. It can also vary if you listen live, on MacBook speaker, or good headphones.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <span className="text-[24px] mt-1">•</span>
+                <p>
+                  <span className="font-bold">Yes, I admit I prefer EDM I guess,</span> but I am open to every genre, every music. Feel free to recommend me songs, even if it is not EDM and even if you think I won&apos;t like them. Every song works towards me &apos;machine learning&apos; the musics.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <span className="text-[24px] mt-1">•</span>
+                <p>
+                  <span className="font-bold">First, I&apos;m trying to rate the musics by shuffling through my Spotify liked songs.</span> I am trying to add about 50 songs every day.
+                </p>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <span className="text-[24px] mt-1">•</span>
+                <p>
+                  <span className="font-bold">Before I rate the music, I at least try to listen to the full music at least once.</span>
+                </p>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <span className="text-[24px] mt-1">•</span>
+                <p>
                   I didn&apos;t divide musics by genres, because I don&apos;t like dividing
                   musics by genres. Sometimes the genre can be ambiguous, and I
                   feel like doing so limits the creativity of the musics. I don&apos;t
