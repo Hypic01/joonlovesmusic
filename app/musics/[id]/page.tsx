@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
-import type { Song, Award } from "@/types/database";
+import type { Song, Award, RatingHistory } from "@/types/database";
 import { getRatingColor } from "@/lib/ratingColors";
 
 // Force dynamic rendering to avoid build-time errors with environment variables
@@ -17,6 +17,7 @@ export default function SongDetailPage() {
   const id = params.id as string;
   const [song, setSong] = useState<Song | null>(null);
   const [awards, setAwards] = useState<Award[]>([]);
+  const [ratingHistory, setRatingHistory] = useState<RatingHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -50,6 +51,16 @@ export default function SongDetailPage() {
 
         if (awardsError) throw awardsError;
         setAwards(awardsData || []);
+
+        // Fetch rating history for this song
+        const { data: historyData, error: historyError } = await supabase
+          .from("rating_history")
+          .select("*")
+          .eq("song_id", id)
+          .order("changed_at", { ascending: false });
+
+        if (historyError) throw historyError;
+        setRatingHistory(historyData || []);
       } catch (error) {
         console.error("Error fetching song:", error);
       } finally {
@@ -243,6 +254,43 @@ export default function SongDetailPage() {
               <div className="mb-12">
                 <h2 className="text-[28px] font-bold mb-2">Comment</h2>
                 <p className="text-[18px] leading-relaxed">{song.comment}</p>
+              </div>
+            )}
+
+            {/* Rating History Section */}
+            {ratingHistory.length > 0 && (
+              <div className="mb-12">
+                <h2 className="text-[28px] font-bold mb-6">Rating History</h2>
+                <div className="space-y-4">
+                  {ratingHistory.map((history) => (
+                    <div
+                      key={history.id}
+                      className="flex items-center gap-4 p-4 border-2 border-black bg-white"
+                    >
+                      {/* Rating */}
+                      <div
+                        className="w-16 h-16 flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: getRatingColor(history.rating) }}
+                      >
+                        <span className="text-[32px] font-black">{history.rating}</span>
+                      </div>
+
+                      {/* Date */}
+                      <div className="flex-1">
+                        <p className="text-[18px] font-semibold">
+                          {new Date(history.changed_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                        <p className="text-[14px] opacity-60">Previous rating</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

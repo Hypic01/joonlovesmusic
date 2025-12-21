@@ -29,3 +29,10 @@ export interface Award {
   position: string;
 }
 
+export interface RatingHistory {
+  id: string;
+  song_id: string;
+  rating: number;
+  changed_at: string;
+}
+
