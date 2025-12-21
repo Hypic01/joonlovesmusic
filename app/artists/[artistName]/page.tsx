@@ -118,7 +118,15 @@ export default function ArtistPage() {
                       {song.title}
                     </h3>
                     {song.album_name && (
-                      <p className="text-[18px] opacity-70">{song.album_name}</p>
+                      <p
+                        className="text-[18px] opacity-70 hover:underline cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/albums/${encodeURIComponent(song.album_name)}`);
+                        }}
+                      >
+                        {song.album_name}
+                      </p>
                     )}
                   </div>
 
