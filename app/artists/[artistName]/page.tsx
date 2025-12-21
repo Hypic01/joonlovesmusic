@@ -145,6 +145,7 @@ export default function ArtistPage() {
                       <p
                         className="text-[18px] opacity-70 hover:underline cursor-pointer"
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           router.push(`/albums/${encodeURIComponent(song.album_name)}`);
                         }}

@@ -167,6 +167,7 @@ export default function MusicsPage() {
                     <p
                       className="text-[18px] font-normal opacity-70 hover:underline cursor-pointer"
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         router.push(`/albums/${encodeURIComponent(song.album_name)}`);
                       }}
@@ -180,6 +181,7 @@ export default function MusicsPage() {
                         <span
                           className="hover:underline cursor-pointer"
                           onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
                             router.push(`/artists/${encodeURIComponent(artist.trim())}`);
                           }}
