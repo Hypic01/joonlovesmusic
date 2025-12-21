@@ -109,69 +109,75 @@ export default function SongDetailPage() {
               </div>
             )}
 
-            {/* Song Header */}
-            <div className="flex items-start gap-6 mb-6">
-              {/* Album Cover and Spotify Player */}
-              <div className="shrink-0" style={{ width: '240px' }}>
+            {/* Song Header - Responsive Layout */}
+            <div className="mb-6">
+              {/* Desktop: Album cover on left, player below */}
+              <div className="flex flex-col md:flex-row md:items-start gap-6">
                 {/* Album Cover */}
-                {song.cover_url ? (
-                  <Image
-                    src={song.cover_url}
-                    alt={`${song.title} cover`}
-                    width={240}
-                    height={240}
-                    className="w-full object-cover"
-                    style={{ aspectRatio: '1/1' }}
-                  />
-                ) : (
-                  <div className="w-full bg-neutral-300" style={{ aspectRatio: '1/1' }} />
-                )}
-
-                {/* Spotify Embed Player */}
-                {song.spotify_track_id && (
-                  <div className="mt-16">
-                    <iframe
-                      src={`https://open.spotify.com/embed/track/${song.spotify_track_id}?utm_source=generator&theme=0`}
-                      width="300"
-                      height="152"
-                      frameBorder="0"
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      loading="lazy"
-                      title={`Spotify player for ${song.title}`}
-                      style={{ maxWidth: '100%' }}
+                <div className="shrink-0" style={{ width: '240px' }}>
+                  {song.cover_url ? (
+                    <Image
+                      src={song.cover_url}
+                      alt={`${song.title} cover`}
+                      width={240}
+                      height={240}
+                      className="w-full object-cover"
+                      style={{ aspectRatio: '1/1' }}
                     />
-                  </div>
-                )}
-              </div>
-
-              {/* Song Info */}
-              <div className="flex-1">
-                <h1 className="text-[56px] font-bold leading-none mb-2">
-                  {song.title}
-                </h1>
-                <p className="text-[32px] font-normal">{song.artist}</p>
-              </div>
-
-              {/* Rating with Last Updated */}
-              <div className="shrink-0">
-                <div 
-                  className="w-32 h-32 flex items-center justify-center"
-                  style={{ backgroundColor: getRatingColor(song.rating) }}
-                >
-                  <span className="text-[64px] font-black">{song.rating}</span>
+                  ) : (
+                    <div className="w-full bg-neutral-300" style={{ aspectRatio: '1/1' }} />
+                  )}
                 </div>
-                {/* Last Updated */}
-                {song.updated_at && (
-                  <div className="text-[14px] opacity-60 mt-2 text-center">
-                    Last updated:<br />
-                    {new Date(song.updated_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
+
+                {/* Song Info and Rating (Desktop) */}
+                <div className="flex-1 flex items-start justify-between gap-6">
+                  {/* Song Info */}
+                  <div className="flex-1">
+                    <h1 className="text-[56px] font-bold leading-none mb-2">
+                      {song.title}
+                    </h1>
+                    <p className="text-[32px] font-normal">{song.artist}</p>
                   </div>
-                )}
+
+                  {/* Rating with Last Updated */}
+                  <div className="shrink-0">
+                    <div 
+                      className="w-32 h-32 flex items-center justify-center"
+                      style={{ backgroundColor: getRatingColor(song.rating) }}
+                    >
+                      <span className="text-[64px] font-black">{song.rating}</span>
+                    </div>
+                    {/* Last Updated */}
+                    {song.updated_at && (
+                      <div className="text-[14px] opacity-60 mt-2 text-center">
+                        Last updated:<br />
+                        {new Date(song.updated_at).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
+
+              {/* Spotify Embed Player - Below everything */}
+              {song.spotify_track_id && (
+                <div className="mt-16">
+                  <iframe
+                    src={`https://open.spotify.com/embed/track/${song.spotify_track_id}?utm_source=generator&theme=0`}
+                    className="w-full md:w-auto"
+                    width="472"
+                    height="100"
+                    frameBorder="0"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                    title={`Spotify player for ${song.title}`}
+                    style={{ maxWidth: '100%' }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Awards Section */}
