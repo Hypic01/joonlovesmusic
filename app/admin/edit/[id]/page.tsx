@@ -160,27 +160,34 @@ export default function EditSongPage() {
     setMessage(null);
 
     try {
-      const { error } = await supabase
+      const updateData = {
+        title: formData.title,
+        artist: formData.artist,
+        rating: parseInt(formData.rating),
+        comment: formData.comment || null,
+        cover_url: formData.cover_url || null,
+        spotify_track_id: formData.spotify_track_id || null,
+        album_name: formData.album_name || null,
+        release_date: formData.release_date || null,
+        duration_ms: formData.duration_ms,
+        explicit: formData.explicit,
+        popularity: formData.popularity,
+        isrc: formData.isrc || null,
+        track_number: formData.track_number,
+        disc_number: formData.disc_number,
+        album_type: formData.album_type || null,
+        preview_url: formData.preview_url || null,
+      };
+
+      console.log("Updating song with data:", updateData); // Debug log
+
+      const { error, data } = await supabase
         .from("songs")
-        .update({
-          title: formData.title,
-          artist: formData.artist,
-          rating: parseInt(formData.rating),
-          comment: formData.comment || null,
-          cover_url: formData.cover_url || null,
-          spotify_track_id: formData.spotify_track_id || null,
-          album_name: formData.album_name || null,
-          release_date: formData.release_date || null,
-          duration_ms: formData.duration_ms,
-          explicit: formData.explicit,
-          popularity: formData.popularity,
-          isrc: formData.isrc || null,
-          track_number: formData.track_number,
-          disc_number: formData.disc_number,
-          album_type: formData.album_type || null,
-          preview_url: formData.preview_url || null,
-        })
-        .eq("id", id);
+        .update(updateData)
+        .eq("id", id)
+        .select(); // Add select to return updated data
+
+      console.log("Update result:", { error, data }); // Debug log
 
       if (error) throw error;
 
