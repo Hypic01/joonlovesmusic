@@ -143,7 +143,12 @@ export default function SongDetailPage() {
                           {song.album_name}
                         </p>
                       )}
-                      <p className="text-[32px] font-normal">{song.artist}</p>
+                      <p 
+                        className="text-[32px] font-normal hover:underline cursor-pointer"
+                        onClick={() => router.push(`/artists/${encodeURIComponent(song.artist)}`)}
+                      >
+                        {song.artist}
+                      </p>
                     </div>
                     
                     {/* Release Date - Aligned to bottom */}
