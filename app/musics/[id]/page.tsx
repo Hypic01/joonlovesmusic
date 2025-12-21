@@ -173,7 +173,7 @@ export default function SongDetailPage() {
                     title={`Spotify player for ${song.title}`}
                     style={{ 
                       width: '400px', 
-                      height: '150px',
+                      height: '80px',
                       maxWidth: '100%',
                       border: 'none'
                     }}
