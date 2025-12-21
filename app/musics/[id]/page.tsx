@@ -39,6 +39,7 @@ export default function SongDetailPage() {
           .single();
 
         if (songError) throw songError;
+        console.log("Fetched song data:", songData); // Debug log
         setSong(songData);
 
         // Fetch awards for this song
