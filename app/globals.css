@@ -34,3 +34,16 @@ body {
 .__next-dev-overlay {
   display: none !important;
 }
+
+/* Hide scrollbars while maintaining scroll functionality */
+* {
+  /* Firefox */
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  /* Chrome, Safari, Edge */
+  display: none;
+  width: 0;
+  height: 0;
+}
