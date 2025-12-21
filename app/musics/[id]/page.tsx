@@ -112,18 +112,19 @@ export default function SongDetailPage() {
             {/* Song Header */}
             <div className="flex items-start gap-6 mb-12">
               {/* Album Cover and Spotify Player */}
-              <div className="w-64 shrink-0">
+              <div className="shrink-0" style={{ width: '320px' }}>
                 {/* Album Cover */}
                 {song.cover_url ? (
                   <Image
                     src={song.cover_url}
                     alt={`${song.title} cover`}
-                    width={256}
-                    height={256}
-                    className="w-64 h-64 object-cover"
+                    width={320}
+                    height={320}
+                    className="w-full object-cover"
+                    style={{ aspectRatio: '1/1' }}
                   />
                 ) : (
-                  <div className="w-64 h-64 bg-neutral-300" />
+                  <div className="w-full bg-neutral-300" style={{ aspectRatio: '1/1' }} />
                 )}
 
                 {/* Spotify Embed Player */}
@@ -131,7 +132,7 @@ export default function SongDetailPage() {
                   <div className="mt-4">
                     <iframe
                       src={`https://open.spotify.com/embed/track/${song.spotify_track_id}?utm_source=generator&theme=0`}
-                      width="100%"
+                      width="320"
                       height="152"
                       frameBorder="0"
                       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
