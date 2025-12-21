@@ -110,7 +110,7 @@ export default function SongDetailPage() {
             )}
 
             {/* Song Header */}
-            <div className="flex items-start gap-6 mb-12">
+            <div className="flex items-start gap-6 mb-6">
               {/* Album Cover and Spotify Player */}
               <div className="shrink-0" style={{ width: '320px' }}>
                 {/* Album Cover */}
