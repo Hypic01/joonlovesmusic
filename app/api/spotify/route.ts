@@ -90,12 +90,32 @@ export async function POST(request: NextRequest) {
     const title = trackData.name || "";
     const artist = trackData.artists?.map((a: { name: string }) => a.name).join(", ") || "";
     const cover_url = trackData.album?.images?.[0]?.url || trackData.album?.images?.[1]?.url || "";
+    const album_name = trackData.album?.name || "";
+    const release_date = trackData.album?.release_date || null;
+    const duration_ms = trackData.duration_ms || null;
+    const explicit = trackData.explicit || false;
+    const popularity = trackData.popularity || null;
+    const isrc = trackData.external_ids?.isrc || null;
+    const track_number = trackData.track_number || null;
+    const disc_number = trackData.disc_number || 1;
+    const album_type = trackData.album?.album_type || null;
+    const preview_url = trackData.preview_url || null;
 
     return NextResponse.json({
       title,
       artist,
       cover_url,
-      spotify_track_id: trackId, // Include track ID for embedding
+      spotify_track_id: trackId,
+      album_name,
+      release_date,
+      duration_ms,
+      explicit,
+      popularity,
+      isrc,
+      track_number,
+      disc_number,
+      album_type,
+      preview_url,
     });
   } catch (error) {
     console.error("Error fetching Spotify data:", error);

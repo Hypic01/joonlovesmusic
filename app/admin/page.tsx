@@ -22,6 +22,16 @@ export default function AdminPage() {
     comment: "",
     cover_url: "",
     spotify_track_id: "",
+    album_name: "",
+    release_date: "",
+    duration_ms: null as number | null,
+    explicit: false,
+    popularity: null as number | null,
+    isrc: "",
+    track_number: null as number | null,
+    disc_number: null as number | null,
+    album_type: "",
+    preview_url: "",
   });
 
   useEffect(() => {
@@ -72,6 +82,16 @@ export default function AdminPage() {
         artist: data.artist || "",
         cover_url: data.cover_url || "",
         spotify_track_id: data.spotify_track_id || "",
+        album_name: data.album_name || "",
+        release_date: data.release_date || "",
+        duration_ms: data.duration_ms || null,
+        explicit: data.explicit || false,
+        popularity: data.popularity || null,
+        isrc: data.isrc || "",
+        track_number: data.track_number || null,
+        disc_number: data.disc_number || null,
+        album_type: data.album_type || "",
+        preview_url: data.preview_url || "",
       });
 
       setMessage({ type: "success", text: "Song info fetched from Spotify!" });
@@ -116,6 +136,16 @@ export default function AdminPage() {
         comment: formData.comment || null,
         cover_url: formData.cover_url || null,
         spotify_track_id: formData.spotify_track_id || null,
+        album_name: formData.album_name || null,
+        release_date: formData.release_date || null,
+        duration_ms: formData.duration_ms,
+        explicit: formData.explicit,
+        popularity: formData.popularity,
+        isrc: formData.isrc || null,
+        track_number: formData.track_number,
+        disc_number: formData.disc_number,
+        album_type: formData.album_type || null,
+        preview_url: formData.preview_url || null,
       });
 
       if (error) throw error;
@@ -128,6 +158,16 @@ export default function AdminPage() {
         comment: "",
         cover_url: "",
         spotify_track_id: "",
+        album_name: "",
+        release_date: "",
+        duration_ms: null,
+        explicit: false,
+        popularity: null,
+        isrc: "",
+        track_number: null,
+        disc_number: null,
+        album_type: "",
+        preview_url: "",
       });
 
       // Refresh after 1 second

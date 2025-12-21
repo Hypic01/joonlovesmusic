@@ -9,6 +9,16 @@ export interface Song {
   created_at: string;
   updated_at?: string;
   spotify_track_id?: string | null;
+  album_name?: string | null;
+  release_date?: string | null;
+  duration_ms?: number | null;
+  explicit?: boolean | null;
+  popularity?: number | null;
+  isrc?: string | null;
+  track_number?: number | null;
+  disc_number?: number | null;
+  album_type?: string | null;
+  preview_url?: string | null;
 }
 
 export interface Award {
