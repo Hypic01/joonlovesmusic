@@ -46,43 +46,43 @@ export default function CriteriaPage() {
 
               {/* 70-79 */}
               <div className="mb-6">
-                <h2 className="text-[32px] font-bold mb-2">70–79 — Good</h2>
-                <p className="mb-3">Enjoyable and worth saving. Mood-dependent, but I usually let it play.</p>
+                <h2 className="text-[32px] font-bold mb-2">70–79 — Playlist lock</h2>
+                <p className="mb-3">This is a real win. If it comes on, I&apos;m happy. It stays saved.</p>
                 <div className="ml-6 space-y-1">
-                  <p><strong>77–79:</strong> Really good when it hits</p>
-                  <p><strong>74–76:</strong> Consistently enjoyable</p>
-                  <p><strong>70–73:</strong> Good but replaceable</p>
+                  <p><strong>77–79:</strong> Highlight track</p>
+                  <p><strong>74–76:</strong> Reliable repeat</p>
+                  <p><strong>70–73:</strong> Easy keep</p>
                 </div>
               </div>
 
               {/* 60-69 */}
               <div className="mb-6">
-                <h2 className="text-[32px] font-bold mb-2">60–69 — Decent</h2>
-                <p className="mb-3">Not bad at all, but I don&apos;t seek it out much.</p>
+                <h2 className="text-[32px] font-bold mb-2">60–69 — Worth keeping</h2>
+                <p className="mb-3">Not a go-to, but it has something. I keep it for the right moment.</p>
                 <div className="ml-6 space-y-1">
-                  <p><strong>67–69:</strong> Borderline good</p>
-                  <p><strong>64–66:</strong> Has something I like</p>
-                  <p><strong>60–63:</strong> Fine</p>
+                  <p><strong>67–69:</strong> Hidden gem</p>
+                  <p><strong>64–66:</strong> Has a hook</p>
+                  <p><strong>60–63:</strong> Good but replaceable</p>
                 </div>
               </div>
 
               {/* 50-59 */}
               <div className="mb-6">
-                <h2 className="text-[32px] font-bold mb-2">50–59 — Okay</h2>
-                <p className="mb-3">Fine in the moment, usually forgettable.</p>
+                <h2 className="text-[32px] font-bold mb-2">50–59 — Fine in the moment</h2>
+                <p className="mb-3">Works while it&apos;s on, but it doesn&apos;t stick.</p>
                 <div className="ml-6 space-y-1">
-                  <p><strong>57–59:</strong> Slightly above average</p>
-                  <p><strong>54–56:</strong> Mildly pleasant</p>
-                  <p><strong>50–53:</strong> Neutral</p>
+                  <p><strong>57–59:</strong> Pretty okay</p>
+                  <p><strong>54–56:</strong> Background-friendly</p>
+                  <p><strong>50–53:</strong> Fine</p>
                 </div>
               </div>
 
               {/* 40-49 */}
               <div className="mb-6">
-                <h2 className="text-[32px] font-bold mb-2">40–49 — &quot;Ok, nice song&quot;</h2>
-                <p className="mb-3">Some good parts, but it doesn&apos;t stick with me.</p>
+                <h2 className="text-[32px] font-bold mb-2">40–49 — Nice idea, doesn&apos;t land</h2>
+                <p className="mb-3">Some good parts, but I&apos;m often tempted to skip.</p>
                 <div className="ml-6 space-y-1">
-                  <p><strong>47–49:</strong> Almost okay</p>
+                  <p><strong>47–49:</strong> Almost fine</p>
                   <p><strong>44–46:</strong> Often tempted to skip</p>
                   <p><strong>40–43:</strong> One decent element</p>
                 </div>

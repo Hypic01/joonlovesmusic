@@ -80,9 +80,11 @@ export default function ArtistPage() {
 
           {/* Artist Header with Image */}
           <div className="flex items-start gap-6 mb-12">
-            {/* Artist Image */}
-            {artist?.image_url && (
-              <div className="shrink-0">
+            {/* Artist Image - always reserve space */}
+            <div className="shrink-0 w-60 h-60">
+              {loading ? (
+                <div className="w-60 h-60 bg-neutral-200 animate-pulse" />
+              ) : artist?.image_url ? (
                 <Image
                   src={artist.image_url}
                   alt={`${artistName} photo`}
@@ -91,8 +93,12 @@ export default function ArtistPage() {
                   className="w-60 h-60 object-cover"
                   priority
                 />
-              </div>
-            )}
+              ) : (
+                <div className="w-60 h-60 bg-neutral-200 flex items-center justify-center">
+                  <span className="text-[64px] opacity-30">{artistName.charAt(0).toUpperCase()}</span>
+                </div>
+              )}
+            </div>
 
             {/* Artist Info and Average Rating */}
             <div className="flex-1 flex items-start justify-between gap-6">

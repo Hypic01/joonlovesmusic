@@ -21,6 +21,7 @@ export default function SongDetailPage() {
   const [commentHistory, setCommentHistory] = useState<CommentHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [deletingHistoryId, setDeletingHistoryId] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user is admin
@@ -67,6 +68,32 @@ export default function SongDetailPage() {
 
     fetchSong();
   }, [id]);
+
+  const handleDeleteRatingHistory = async (historyId: string) => {
+    if (!confirm("Are you sure you want to delete this rating history entry?")) {
+      return;
+    }
+
+    setDeletingHistoryId(historyId);
+    try {
+      const response = await fetch(`/api/rating-history/${historyId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const result = await response.json();
+        throw new Error(result.error || "Failed to delete");
+      }
+
+      // Remove from local state
+      setRatingHistory((prev) => prev.filter((h) => h.id !== historyId));
+    } catch (error) {
+      console.error("Error deleting rating history:", error);
+      alert("Failed to delete rating history");
+    } finally {
+      setDeletingHistoryId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -311,6 +338,17 @@ export default function SongDetailPage() {
                         </p>
                         <p className="text-[14px] opacity-60">Previous rating</p>
                       </div>
+
+                      {/* Delete button - admin only */}
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleDeleteRatingHistory(history.id)}
+                          disabled={deletingHistoryId === history.id}
+                          className="px-3 py-1 text-[14px] border-2 border-black bg-white hover:border-red-500 hover:text-red-500 font-semibold cursor-pointer disabled:opacity-50"
+                        >
+                          {deletingHistoryId === history.id ? "..." : "Delete"}
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
