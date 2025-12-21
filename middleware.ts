@@ -23,3 +23,8 @@ export const config = {
   matcher: ["/admin/:path*"],
 };
 
+// Temporarily disable middleware for debugging
+// export function middleware() {
+//   return NextResponse.next();
+// }
+
