@@ -201,7 +201,7 @@ export default function SongDetailPage() {
             {/* Comment Section */}
             {song.comment && (
               <div className="mb-12">
-                <h2 className="text-[28px] font-bold mb-6">Comment</h2>
+                <h2 className="text-[28px] font-bold mb-2">Comment</h2>
                 <p className="text-[18px] leading-relaxed">{song.comment}</p>
               </div>
             )}
