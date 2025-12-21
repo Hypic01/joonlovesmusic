@@ -17,6 +17,7 @@ export default function MusicsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [allSongs, setAllSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -47,10 +48,28 @@ export default function MusicsPage() {
     fetchSongs();
   }, []);
 
-  const totalPages = Math.ceil(allSongs.length / SONGS_PER_PAGE);
+  // Filter songs based on search query
+  const filteredSongs = allSongs.filter((song) => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase();
+    const titleMatch = song.title.toLowerCase().includes(query);
+    const artistMatch = song.artist.toLowerCase().includes(query);
+    const albumMatch = song.album_name?.toLowerCase().includes(query) || false;
+    
+    return titleMatch || artistMatch || albumMatch;
+  });
+
+  const totalPages = Math.ceil(filteredSongs.length / SONGS_PER_PAGE);
   const startIndex = (currentPage - 1) * SONGS_PER_PAGE;
   const endIndex = startIndex + SONGS_PER_PAGE;
-  const currentSongs = allSongs.slice(startIndex, endIndex);
+  const currentSongs = filteredSongs.slice(startIndex, endIndex);
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
   const goToPage = (page: number) => {
     setCurrentPage(page);
@@ -68,6 +87,8 @@ export default function MusicsPage() {
             <div className="relative">
               <input
                 type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
                 placeholder="search by song, album, or artist"
                 className="w-full px-6 py-4 text-[20px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red)"
               />
@@ -171,12 +192,13 @@ export default function MusicsPage() {
           </div>
 
           {/* Pagination */}
-          <div className="max-w-[964px] mx-auto mb-8">
-            <div className="flex items-center justify-between">
-              <p className="text-[16px]">
-                Showing {startIndex + 1}-{Math.min(endIndex, allSongs.length)} of{" "}
-                {allSongs.length} songs
-              </p>
+          {filteredSongs.length > SONGS_PER_PAGE && (
+            <div className="max-w-[964px] mx-auto mb-8">
+              <div className="flex items-center justify-between">
+                <p className="text-[16px]">
+                  Showing {startIndex + 1}-{Math.min(endIndex, filteredSongs.length)} of{" "}
+                  {filteredSongs.length} {searchQuery ? "matching " : ""}songs
+                </p>
 
               <div className="flex items-center gap-2">
                 {/* Previous Button */}
@@ -217,7 +239,18 @@ export default function MusicsPage() {
                 </button>
               </div>
             </div>
-          </div>
+            </div>
+          )}
+
+          {/* No Results Message */}
+          {!loading && searchQuery && filteredSongs.length === 0 && (
+            <div className="max-w-[964px] mx-auto text-center py-12">
+              <p className="text-[24px] font-semibold mb-2">No songs found</p>
+              <p className="text-[18px] opacity-70">
+                Try searching for a different song, artist, or album
+              </p>
+            </div>
+          )}
         </div>
       </main>
   );
