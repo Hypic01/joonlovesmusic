@@ -132,16 +132,29 @@ export default function SongDetailPage() {
                 {/* Song Info and Rating (Desktop) */}
                 <div className="flex-1 flex items-start justify-between gap-6">
                   {/* Song Info */}
-                  <div className="flex-1">
-                    <h1 className="text-[56px] font-bold leading-none mb-2">
-                      {song.title}
-                    </h1>
-                    {song.album_name && (
-                      <p className="text-[24px] font-normal opacity-70 mb-1">
-                        {song.album_name}
+                  <div className="flex-1 flex flex-col" style={{ minHeight: '240px' }}>
+                    <div>
+                      <h1 className="text-[56px] font-bold leading-none mb-2">
+                        {song.title}
+                      </h1>
+                      {song.album_name && (
+                        <p className="text-[24px] font-normal opacity-70 mb-1">
+                          {song.album_name}
+                        </p>
+                      )}
+                      <p className="text-[32px] font-normal">{song.artist}</p>
+                    </div>
+                    
+                    {/* Release Date - Aligned to bottom */}
+                    {song.release_date && (
+                      <p className="text-[16px] opacity-60 mt-auto">
+                        Released: {new Date(song.release_date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
                       </p>
                     )}
-                    <p className="text-[32px] font-normal">{song.artist}</p>
                   </div>
 
                   {/* Rating with Last Updated */}
