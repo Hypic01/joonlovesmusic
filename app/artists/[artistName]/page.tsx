@@ -60,6 +60,11 @@ export default function ArtistPage() {
     fetchArtistData();
   }, [artistName]);
 
+  // Calculate average rating
+  const averageRating = songs.length > 0
+    ? Math.round(songs.reduce((sum, song) => sum + song.rating, 0) / songs.length)
+    : 0;
+
   return (
     <main className="relative h-full overflow-hidden">
       <div ref={scrollContainerRef} className="relative z-10 h-full overflow-y-auto">
@@ -89,12 +94,30 @@ export default function ArtistPage() {
               </div>
             )}
 
-            {/* Artist Info */}
-            <div className="flex-1 flex flex-col justify-center">
-              <h1 className="text-[56px] font-bold leading-none mb-2">{artistName}</h1>
-              <p className="text-[24px] opacity-70">
-                {songs.length} {songs.length === 1 ? "song" : "songs"}
-              </p>
+            {/* Artist Info and Average Rating */}
+            <div className="flex-1 flex items-start justify-between gap-6">
+              {/* Artist Info */}
+              <div className="flex-1 flex flex-col justify-center">
+                <h1 className="text-[56px] font-bold leading-none mb-2">{artistName}</h1>
+                <p className="text-[24px] opacity-70">
+                  {songs.length} {songs.length === 1 ? "song" : "songs"}
+                </p>
+              </div>
+
+              {/* Average Rating */}
+              {songs.length > 0 && (
+                <div className="shrink-0">
+                  <div
+                    className="w-32 h-32 flex items-center justify-center"
+                    style={{ backgroundColor: getRatingColor(averageRating) }}
+                  >
+                    <span className="text-[64px] font-black">{averageRating}</span>
+                  </div>
+                  <div className="text-[14px] opacity-60 mt-2 text-center">
+                    Average Rating
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
