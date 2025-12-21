@@ -85,58 +85,96 @@ export default function AlbumPage() {
                 <div
                   key={song.id}
                   onClick={() => router.push(`/musics/${song.id}`)}
-                  className="flex items-center gap-4 p-4 border-2 border-black bg-white hover:border-(--color-brand-red) cursor-pointer"
+                  className="block p-3 md:p-4 border-2 border-black bg-white hover:border-(--color-brand-red) cursor-pointer"
                 >
-                  {/* Track Number */}
-                  <div className="w-16 text-center text-[48px] font-black">
-                    {song.track_number || index + 1}
-                  </div>
+                  {/* Mobile Layout */}
+                  <div className="flex md:hidden gap-3">
+                    {/* Left: Track Number + Album Cover */}
+                    <div className="flex flex-col items-center gap-1 shrink-0">
+                      <div className="text-[28px] font-black">{song.track_number || index + 1}</div>
+                      {song.cover_url ? (
+                        <Image
+                          src={song.cover_url}
+                          alt={`${song.title} cover`}
+                          width={64}
+                          height={64}
+                          className="w-16 h-16 object-cover"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-neutral-300" />
+                      )}
+                    </div>
 
-                  {/* Album Cover */}
-                  {song.cover_url ? (
-                    <Image
-                      src={song.cover_url}
-                      alt={`${song.title} cover`}
-                      width={96}
-                      height={96}
-                      className="w-24 h-24 object-cover shrink-0"
-                    />
-                  ) : (
-                    <div className="w-24 h-24 bg-neutral-300 shrink-0" />
-                  )}
+                    {/* Middle: Song Info */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <h3 className="text-[20px] font-bold leading-tight truncate">
+                        {song.title}
+                      </h3>
+                      <p className="text-[14px] opacity-70 truncate">{song.artist}</p>
+                    </div>
 
-                  {/* Song Info */}
-                  <div className="flex-1">
-                    <h3 className="text-[32px] font-bold leading-none">
-                      {song.title}
-                    </h3>
-                    <p className="text-[18px] opacity-70">{song.artist}</p>
-                  </div>
-
-                  {/* Rating */}
-                  <div
-                    className="w-24 h-24 flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: getRatingColor(song.rating) }}
-                  >
-                    <span className="text-[40px] font-black">{song.rating}</span>
-                  </div>
-
-                  {/* Arrow */}
-                  <button className="w-16 h-16 flex items-center justify-center shrink-0 hover:opacity-60 cursor-pointer">
-                    <svg
-                      width="32"
-                      height="32"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                    {/* Right: Rating */}
+                    <div
+                      className="w-14 h-14 flex items-center justify-center shrink-0 self-center"
+                      style={{ backgroundColor: getRatingColor(song.rating) }}
                     >
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </button>
+                      <span className="text-[28px] font-black">{song.rating}</span>
+                    </div>
+                  </div>
+
+                  {/* Desktop Layout */}
+                  <div className="hidden md:flex items-center gap-4">
+                    {/* Track Number */}
+                    <div className="w-16 text-center text-[48px] font-black">
+                      {song.track_number || index + 1}
+                    </div>
+
+                    {/* Album Cover */}
+                    {song.cover_url ? (
+                      <Image
+                        src={song.cover_url}
+                        alt={`${song.title} cover`}
+                        width={96}
+                        height={96}
+                        className="w-24 h-24 object-cover shrink-0"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 bg-neutral-300 shrink-0" />
+                    )}
+
+                    {/* Song Info */}
+                    <div className="flex-1">
+                      <h3 className="text-[32px] font-bold leading-none">
+                        {song.title}
+                      </h3>
+                      <p className="text-[18px] opacity-70">{song.artist}</p>
+                    </div>
+
+                    {/* Rating */}
+                    <div
+                      className="w-24 h-24 flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: getRatingColor(song.rating) }}
+                    >
+                      <span className="text-[40px] font-black">{song.rating}</span>
+                    </div>
+
+                    {/* Arrow */}
+                    <button className="w-16 h-16 flex items-center justify-center shrink-0 hover:opacity-60 cursor-pointer">
+                      <svg
+                        width="32"
+                        height="32"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               ))
             )}

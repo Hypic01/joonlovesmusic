@@ -187,90 +187,146 @@ export default function MusicsPage() {
                   key={song.id}
                   href={`/musics/${song.id}`}
                   prefetch={true}
-                  className="flex items-center gap-4 p-4 border-2 border-black bg-white hover:border-(--color-brand-red) cursor-pointer"
+                  className="block p-3 md:p-4 border-2 border-black bg-white hover:border-(--color-brand-red) cursor-pointer"
                 >
-                  {/* Rank */}
-                  <div className="w-16 text-center text-[48px] font-black">
-                    {song.rank}
-                  </div>
+                  {/* Mobile Layout */}
+                  <div className="flex md:hidden gap-3">
+                    {/* Left: Rank + Album Cover */}
+                    <div className="flex flex-col items-center gap-1 shrink-0">
+                      <div className="text-[28px] font-black">{song.rank}</div>
+                      {song.cover_url ? (
+                        <Image
+                          src={song.cover_url}
+                          alt={`${song.title} cover`}
+                          width={64}
+                          height={64}
+                          className="w-16 h-16 object-cover"
+                          priority={song.rank <= 10}
+                          loading={song.rank <= 10 ? "eager" : "lazy"}
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-neutral-300" />
+                      )}
+                    </div>
 
-                  {/* Album Cover */}
-                  {song.cover_url ? (
-                    <Image
-                      src={song.cover_url}
-                      alt={`${song.title} cover`}
-                      width={96}
-                      height={96}
-                      className="w-24 h-24 object-cover shrink-0"
-                      priority={song.rank <= 10}
-                      loading={song.rank <= 10 ? "eager" : "lazy"}
-                    />
-                  ) : (
-                    <div className="w-24 h-24 bg-neutral-300 shrink-0" />
-                  )}
-
-                {/* Song Info */}
-                <div className="flex-1">
-                  <h3 className="text-[32px] font-bold leading-none">
-                    {song.title}
-                  </h3>
-                  {song.album_name && (
-                    <p
-                      className="text-[18px] font-normal opacity-70 hover:underline cursor-pointer"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (song.album_name) {
-                          router.push(`/albums/${encodeURIComponent(song.album_name)}`);
-                        }
-                      }}
-                    >
-                      {song.album_name}
-                    </p>
-                  )}
-                  <div className="text-[20px]">
-                    {song.artist.split(',').map((artist, index, array) => (
-                      <span key={index}>
-                        <span
-                          className="hover:underline cursor-pointer"
+                    {/* Middle: Song Info */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-[20px] font-bold leading-tight truncate">
+                        {song.title}
+                      </h3>
+                      {song.album_name && (
+                        <p
+                          className="text-[14px] font-normal opacity-70 truncate"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            router.push(`/artists/${encodeURIComponent(artist.trim())}`);
+                            if (song.album_name) {
+                              router.push(`/albums/${encodeURIComponent(song.album_name)}`);
+                            }
                           }}
                         >
-                          {artist.trim()}
-                        </span>
-                        {index < array.length - 1 && <span>, </span>}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                          {song.album_name}
+                        </p>
+                      )}
+                      <div className="text-[14px] truncate">
+                        {song.artist}
+                      </div>
+                    </div>
 
-                {/* Rating */}
-                <div 
-                  className="w-24 h-24 flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: getRatingColor(song.rating) }}
-                >
-                  <span className="text-[40px] font-black">{song.rating}</span>
-                </div>
-
-                  {/* Arrow */}
-                  <button className="w-16 h-16 flex items-center justify-center shrink-0 hover:opacity-60 cursor-pointer">
-                    <svg
-                      width="32"
-                      height="32"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                    {/* Right: Rating */}
+                    <div
+                      className="w-14 h-14 flex items-center justify-center shrink-0 self-center"
+                      style={{ backgroundColor: getRatingColor(song.rating) }}
                     >
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </button>
+                      <span className="text-[28px] font-black">{song.rating}</span>
+                    </div>
+                  </div>
+
+                  {/* Desktop Layout */}
+                  <div className="hidden md:flex items-center gap-4">
+                    {/* Rank */}
+                    <div className="w-16 text-center text-[48px] font-black">
+                      {song.rank}
+                    </div>
+
+                    {/* Album Cover */}
+                    {song.cover_url ? (
+                      <Image
+                        src={song.cover_url}
+                        alt={`${song.title} cover`}
+                        width={96}
+                        height={96}
+                        className="w-24 h-24 object-cover shrink-0"
+                        priority={song.rank <= 10}
+                        loading={song.rank <= 10 ? "eager" : "lazy"}
+                      />
+                    ) : (
+                      <div className="w-24 h-24 bg-neutral-300 shrink-0" />
+                    )}
+
+                    {/* Song Info */}
+                    <div className="flex-1">
+                      <h3 className="text-[32px] font-bold leading-none">
+                        {song.title}
+                      </h3>
+                      {song.album_name && (
+                        <p
+                          className="text-[18px] font-normal opacity-70 hover:underline cursor-pointer"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (song.album_name) {
+                              router.push(`/albums/${encodeURIComponent(song.album_name)}`);
+                            }
+                          }}
+                        >
+                          {song.album_name}
+                        </p>
+                      )}
+                      <div className="text-[20px]">
+                        {song.artist.split(',').map((artist, index, array) => (
+                          <span key={index}>
+                            <span
+                              className="hover:underline cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                router.push(`/artists/${encodeURIComponent(artist.trim())}`);
+                              }}
+                            >
+                              {artist.trim()}
+                            </span>
+                            {index < array.length - 1 && <span>, </span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Rating */}
+                    <div
+                      className="w-24 h-24 flex items-center justify-center shrink-0"
+                      style={{ backgroundColor: getRatingColor(song.rating) }}
+                    >
+                      <span className="text-[40px] font-black">{song.rating}</span>
+                    </div>
+
+                    {/* Arrow */}
+                    <button className="w-16 h-16 flex items-center justify-center shrink-0 hover:opacity-60 cursor-pointer">
+                      <svg
+                        width="32"
+                        height="32"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </button>
+                  </div>
                 </Link>
               ))
             )}

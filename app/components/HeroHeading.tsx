@@ -13,8 +13,8 @@ export default function HeroHeading({
     <div
       className={`w-full text-(--color-brand-red) leading-none tracking-tight text-center ${className}`}
     >
-      {/* Mobile: 3 lines */}
-      <h1 className="md:hidden">
+      {/* Mobile: 3 lines with tighter spacing */}
+      <h1 className="md:hidden" style={{ lineHeight: 0.5 }}>
         {mobileLines.map((line) => (
           <span key={line} className="block text-[140px]">
             {line}
