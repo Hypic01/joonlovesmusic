@@ -374,6 +374,35 @@ export default function EditSongPage() {
               />
             </div>
 
+            <div>
+              <label className="block text-[20px] font-semibold mb-2">
+                Album Name
+              </label>
+              <input
+                type="text"
+                value={formData.album_name}
+                onChange={(e) =>
+                  setFormData({ ...formData, album_name: e.target.value })
+                }
+                placeholder="Auto-filled from Spotify or enter manually"
+                className="w-full px-4 py-3 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red)"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[20px] font-semibold mb-2">
+                Release Date
+              </label>
+              <input
+                type="date"
+                value={formData.release_date}
+                onChange={(e) =>
+                  setFormData({ ...formData, release_date: e.target.value })
+                }
+                className="w-full px-4 py-3 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red)"
+              />
+            </div>
+
             {/* Awards section - placeholder for future */}
             {awards.length > 0 && (
               <div>
