@@ -22,16 +22,23 @@ export default function ArtistPage() {
   useEffect(() => {
     async function fetchArtistSongs() {
       try {
+        // Fetch all songs, then filter by artist name (handles collaborations)
         const { data, error } = await supabase
           .from("songs")
           .select("*")
-          .eq("artist", artistName)
           .order("rating", { ascending: false });
 
         if (error) throw error;
 
-        // Add rank based on position in sorted array
-        const songsWithRank = (data || []).map((song, index) => ({
+        // Filter songs where the artist name appears in the artist field
+        // Split by comma and check if any artist matches
+        const filteredSongs = (data || []).filter((song) => {
+          const artists = song.artist.split(',').map((a) => a.trim());
+          return artists.includes(artistName);
+        });
+
+        // Add rank based on position in filtered array
+        const songsWithRank = filteredSongs.map((song, index) => ({
           ...song,
           rank: index + 1,
         }));
