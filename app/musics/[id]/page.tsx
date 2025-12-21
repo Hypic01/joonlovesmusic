@@ -261,12 +261,16 @@ export default function SongDetailPage() {
             )}
 
             {/* Comment Section */}
-            {song.comment && (
-              <div className="mb-12">
-                <h2 className="text-[28px] font-bold mb-2">Comment</h2>
+            <div className="mb-12">
+              <h2 className="text-[28px] font-bold mb-2">Comment</h2>
+              {song.comment ? (
                 <p className="text-[18px] leading-relaxed">{song.comment}</p>
-              </div>
-            )}
+              ) : (
+                <p className="text-[18px] leading-relaxed opacity-50 italic">
+                  Joon hasn&apos;t added comment to this music yet.
+                </p>
+              )}
+            </div>
 
             {/* Rating History Section */}
             {ratingHistory.length > 0 && (
