@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
-import type { Song, Award, RatingHistory } from "@/types/database";
+import type { Song, Award, RatingHistory, CommentHistory } from "@/types/database";
 import { getRatingColor } from "@/lib/ratingColors";
 
 // Force dynamic rendering to avoid build-time errors with environment variables
@@ -18,6 +18,7 @@ export default function SongDetailPage() {
   const [song, setSong] = useState<Song | null>(null);
   const [awards, setAwards] = useState<Award[]>([]);
   const [ratingHistory, setRatingHistory] = useState<RatingHistory[]>([]);
+  const [commentHistory, setCommentHistory] = useState<CommentHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -61,6 +62,16 @@ export default function SongDetailPage() {
 
         if (historyError) throw historyError;
         setRatingHistory(historyData || []);
+
+        // Fetch comment history for this song
+        const { data: commentHistoryData, error: commentHistoryError } = await supabase
+          .from("comment_history")
+          .select("*")
+          .eq("song_id", id)
+          .order("changed_at", { ascending: false });
+
+        if (commentHistoryError) throw commentHistoryError;
+        setCommentHistory(commentHistoryData || []);
       } catch (error) {
         console.error("Error fetching song:", error);
       } finally {
@@ -288,6 +299,53 @@ export default function SongDetailPage() {
                         </p>
                         <p className="text-[14px] opacity-60">Previous rating</p>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Comment History Section */}
+            {commentHistory.length > 0 && (
+              <div className="mb-12">
+                <h2 className="text-[28px] font-bold mb-6">Comment History</h2>
+                <div className="space-y-4">
+                  {commentHistory.map((history) => (
+                    <div
+                      key={history.id}
+                      className="p-4 border-2 border-black bg-white"
+                    >
+                      {/* Header with rating and date */}
+                      <div className="flex items-center gap-4 mb-4">
+                        {/* Rating at that time */}
+                        <div
+                          className="w-12 h-12 flex items-center justify-center shrink-0"
+                          style={{ backgroundColor: getRatingColor(history.rating) }}
+                        >
+                          <span className="text-[24px] font-black">{history.rating}</span>
+                        </div>
+
+                        {/* Date */}
+                        <div className="flex-1">
+                          <p className="text-[18px] font-semibold">
+                            {new Date(history.changed_at).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                          <p className="text-[14px] opacity-60">Previous comment</p>
+                        </div>
+                      </div>
+
+                      {/* Comment text */}
+                      {history.comment ? (
+                        <p className="text-[16px] leading-relaxed">{history.comment}</p>
+                      ) : (
+                        <p className="text-[16px] opacity-50 italic">No comment</p>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -36,3 +36,11 @@ export interface RatingHistory {
   changed_at: string;
 }
 
+export interface CommentHistory {
+  id: string;
+  song_id: string;
+  comment: string | null;
+  rating: number;
+  changed_at: string;
+}
+
