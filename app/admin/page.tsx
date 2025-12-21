@@ -88,6 +88,25 @@ export default function AdminPage() {
     setMessage(null);
 
     try {
+      // Check for duplicate (same title AND artist)
+      const { data: existingSongs, error: checkError } = await supabase
+        .from("songs")
+        .select("id, title, artist")
+        .eq("title", formData.title)
+        .eq("artist", formData.artist);
+
+      if (checkError) throw checkError;
+
+      if (existingSongs && existingSongs.length > 0) {
+        setMessage({
+          type: "error",
+          text: `This song already exists: "${formData.title}" by ${formData.artist}. Please check the music list.`,
+        });
+        setLoading(false);
+        return;
+      }
+
+      // If no duplicate, proceed with insert
       const { error } = await supabase.from("songs").insert({
         title: formData.title,
         artist: formData.artist,
