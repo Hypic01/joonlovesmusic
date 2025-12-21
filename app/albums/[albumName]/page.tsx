@@ -26,7 +26,7 @@ export default function AlbumPage() {
           .from("songs")
           .select("*")
           .eq("album_name", albumName)
-          .order("track_number", { ascending: true, nullsLast: true });
+          .order("track_number", { ascending: true, nullsFirst: false });
 
         if (error) throw error;
 

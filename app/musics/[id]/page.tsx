@@ -164,7 +164,11 @@ export default function SongDetailPage() {
                       {song.album_name && (
                         <p
                           className="text-[24px] font-normal opacity-70 mb-1 hover:underline cursor-pointer"
-                          onClick={() => router.push(`/albums/${encodeURIComponent(song.album_name)}`)}
+                          onClick={() => {
+                            if (song.album_name) {
+                              router.push(`/albums/${encodeURIComponent(song.album_name)}`);
+                            }
+                          }}
                         >
                           {song.album_name}
                         </p>

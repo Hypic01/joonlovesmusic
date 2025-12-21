@@ -169,7 +169,9 @@ export default function MusicsPage() {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        router.push(`/albums/${encodeURIComponent(song.album_name)}`);
+                        if (song.album_name) {
+                          router.push(`/albums/${encodeURIComponent(song.album_name)}`);
+                        }
                       }}
                     >
                       {song.album_name}
