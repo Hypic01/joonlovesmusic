@@ -112,14 +112,14 @@ export default function SongDetailPage() {
             {/* Song Header */}
             <div className="flex items-start gap-6 mb-6">
               {/* Album Cover and Spotify Player */}
-              <div className="shrink-0" style={{ width: '320px' }}>
+              <div className="shrink-0" style={{ width: '240px' }}>
                 {/* Album Cover */}
                 {song.cover_url ? (
                   <Image
                     src={song.cover_url}
                     alt={`${song.title} cover`}
-                    width={320}
-                    height={320}
+                    width={240}
+                    height={240}
                     className="w-full object-cover"
                     style={{ aspectRatio: '1/1' }}
                   />
@@ -132,7 +132,7 @@ export default function SongDetailPage() {
                   <div className="mt-4">
                     <iframe
                       src={`https://open.spotify.com/embed/track/${song.spotify_track_id}?utm_source=generator&theme=0`}
-                      width="320"
+                      width="240"
                       height="152"
                       frameBorder="0"
                       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
