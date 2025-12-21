@@ -16,7 +16,7 @@
   --font-mono: var(--font-geist-mono);
   --breakpoint-md: 810px;
   --breakpoint-lg: 1200px;
-}
+  }
 
 html,
 body {

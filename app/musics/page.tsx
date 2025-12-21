@@ -226,7 +226,7 @@ export default function MusicsPage() {
           </div>
 
           {/* Pagination */}
-          {filteredSongs.length > SONGS_PER_PAGE && (
+          {filteredSongs.length > 0 && (
             <div className="max-w-[964px] mx-auto mb-8">
               <div className="flex items-center justify-between">
                 <p className="text-[16px]">
@@ -234,45 +234,47 @@ export default function MusicsPage() {
                   {filteredSongs.length} {searchQuery ? "matching " : ""}songs
                 </p>
 
-              <div className="flex items-center gap-2">
-                {/* Previous Button */}
-                <button
-                  onClick={() => goToPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer"
-                >
-                  Previous
-                </button>
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-2">
+                    {/* Previous Button */}
+                    <button
+                      onClick={() => goToPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer"
+                    >
+                      Previous
+                    </button>
 
-                {/* Page Numbers */}
-                <div className="flex gap-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        onClick={() => goToPage(page)}
-                        className={`w-10 h-10 border-2 border-black font-semibold cursor-pointer ${
-                          currentPage === page
-                            ? "bg-(--color-brand-red) text-white"
-                            : "bg-white hover:bg-neutral-100"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    )
-                  )}
-                </div>
+                    {/* Page Numbers */}
+                    <div className="flex gap-2">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                          <button
+                            key={page}
+                            onClick={() => goToPage(page)}
+                            className={`w-10 h-10 border-2 border-black font-semibold cursor-pointer ${
+                              currentPage === page
+                                ? "bg-(--color-brand-red) text-white"
+                                : "bg-white hover:bg-neutral-100"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        )
+                      )}
+                    </div>
 
-                {/* Next Button */}
-                <button
-                  onClick={() => goToPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer"
-                >
-                  Next
-                </button>
+                    {/* Next Button */}
+                    <button
+                      onClick={() => goToPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
             </div>
           )}
 
