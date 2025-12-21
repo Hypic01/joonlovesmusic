@@ -14,11 +14,21 @@ export const dynamic = 'force-dynamic';
 
 const SONGS_PER_PAGE = 50;
 
+type SortOption = "rating-desc" | "rating-asc" | "updated-desc" | "updated-asc";
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "rating-desc", label: "Rating (High to Low)" },
+  { value: "rating-asc", label: "Rating (Low to High)" },
+  { value: "updated-desc", label: "Updated (New to Old)" },
+  { value: "updated-asc", label: "Updated (Old to New)" },
+];
+
 export default function MusicsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [allSongs, setAllSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("rating-desc");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -49,17 +59,36 @@ export default function MusicsPage() {
     fetchSongs();
   }, []);
 
-  // Filter songs based on search query
-  const filteredSongs = allSongs.filter((song) => {
-    if (!searchQuery.trim()) return true;
-    
-    const query = searchQuery.toLowerCase();
-    const titleMatch = song.title.toLowerCase().includes(query);
-    const artistMatch = song.artist.toLowerCase().includes(query);
-    const albumMatch = song.album_name?.toLowerCase().includes(query) || false;
-    
-    return titleMatch || artistMatch || albumMatch;
-  });
+  // Filter and sort songs
+  const filteredSongs = allSongs
+    .filter((song) => {
+      if (!searchQuery.trim()) return true;
+
+      const query = searchQuery.toLowerCase();
+      const titleMatch = song.title.toLowerCase().includes(query);
+      const artistMatch = song.artist.toLowerCase().includes(query);
+      const albumMatch = song.album_name?.toLowerCase().includes(query) || false;
+
+      return titleMatch || artistMatch || albumMatch;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "rating-desc":
+          return b.rating - a.rating;
+        case "rating-asc":
+          return a.rating - b.rating;
+        case "updated-desc":
+          return new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime();
+        case "updated-asc":
+          return new Date(a.updated_at || a.created_at).getTime() - new Date(b.updated_at || b.created_at).getTime();
+        default:
+          return 0;
+      }
+    })
+    .map((song, index) => ({
+      ...song,
+      rank: index + 1,
+    }));
 
   const totalPages = Math.ceil(filteredSongs.length / SONGS_PER_PAGE);
   const startIndex = (currentPage - 1) * SONGS_PER_PAGE;
@@ -70,6 +99,12 @@ export default function MusicsPage() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1); // Reset to first page when searching
+  };
+
+  // Handle sort change
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value as SortOption);
+    setCurrentPage(1); // Reset to first page when sorting
   };
 
   const goToPage = (page: number) => {
@@ -83,34 +118,50 @@ export default function MusicsPage() {
         <div ref={scrollContainerRef} className="relative z-10 h-full overflow-y-auto">
           <Navbar />
 
-          {/* Search Bar */}
+          {/* Search Bar and Sort */}
           <div className="max-w-[964px] mx-auto mb-8">
-            <div className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                placeholder="search by song, album, or artist"
-                className="w-full px-6 py-4 text-[20px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red)"
-              />
-              <button
-                className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
-                aria-label="Search"
-              >
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+            <div className="flex flex-col md:flex-row gap-4">
+              {/* Search Input */}
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  placeholder="search by song, album, or artist"
+                  className="w-full px-6 py-4 text-[20px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red)"
+                />
+                <button
+                  className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
+                  aria-label="Search"
                 >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-              </button>
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.35-4.35" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Sort Dropdown */}
+              <select
+                value={sortBy}
+                onChange={handleSortChange}
+                className="px-4 py-4 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red) cursor-pointer font-semibold min-w-[240px]"
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
