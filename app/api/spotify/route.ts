@@ -101,6 +101,35 @@ export async function POST(request: NextRequest) {
     const album_type = trackData.album?.album_type || null;
     const preview_url = trackData.preview_url || null;
 
+    // Fetch artist images
+    const artistsData = await Promise.all(
+      (trackData.artists || []).map(async (artist: { id: string; name: string }) => {
+        try {
+          const artistResponse = await fetch(`https://api.spotify.com/v1/artists/${artist.id}`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+
+          if (artistResponse.ok) {
+            const artistData = await artistResponse.json();
+            return {
+              name: artist.name,
+              spotify_id: artist.id,
+              image_url: artistData.images?.[0]?.url || artistData.images?.[1]?.url || null,
+            };
+          }
+        } catch (error) {
+          console.error(`Failed to fetch artist ${artist.name}:`, error);
+        }
+        return {
+          name: artist.name,
+          spotify_id: artist.id,
+          image_url: null,
+        };
+      })
+    );
+
     return NextResponse.json({
       title,
       artist,
@@ -116,6 +145,7 @@ export async function POST(request: NextRequest) {
       disc_number,
       album_type,
       preview_url,
+      artists: artistsData, // Array of artist objects with images
     });
   } catch (error) {
     console.error("Error fetching Spotify data:", error);

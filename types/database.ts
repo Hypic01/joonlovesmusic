@@ -44,3 +44,11 @@ export interface CommentHistory {
   changed_at: string;
 }
 
+export interface Artist {
+  id: string;
+  name: string;
+  image_url: string | null;
+  spotify_id: string | null;
+  created_at: string;
+}
+

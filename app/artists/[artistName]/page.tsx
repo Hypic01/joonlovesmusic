@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
-import type { Song } from "@/types/database";
+import type { Song, Artist } from "@/types/database";
 import { getRatingColor } from "@/lib/ratingColors";
 
 // Force dynamic rendering
@@ -16,23 +16,28 @@ export default function ArtistPage() {
   const router = useRouter();
   const artistName = decodeURIComponent(params.artistName as string);
   const [songs, setSongs] = useState<Song[]>([]);
+  const [artist, setArtist] = useState<Artist | null>(null);
   const [loading, setLoading] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    async function fetchArtistSongs() {
+    async function fetchArtistData() {
       try {
-        // Fetch all songs, then filter by artist name (handles collaborations)
-        const { data, error } = await supabase
-          .from("songs")
-          .select("*")
-          .order("rating", { ascending: false });
+        // Fetch artist data and songs in parallel
+        const [
+          { data: songsData, error: songsError },
+          { data: artistData }
+        ] = await Promise.all([
+          supabase.from("songs").select("*").order("rating", { ascending: false }),
+          supabase.from("artists").select("*").eq("name", artistName).single()
+        ]);
 
-        if (error) throw error;
+        if (songsError) throw songsError;
+        // Artist data might not exist if not fetched from Spotify yet
 
         // Filter songs where the artist name appears in the artist field
         // Split by comma and check if any artist matches
-        const filteredSongs = (data || []).filter((song) => {
+        const filteredSongs = (songsData || []).filter((song) => {
           const artists = song.artist.split(',').map((a: string) => a.trim());
           return artists.includes(artistName);
         });
@@ -44,14 +49,15 @@ export default function ArtistPage() {
         }));
 
         setSongs(songsWithRank);
+        setArtist(artistData || null);
       } catch (error) {
-        console.error("Error fetching artist songs:", error);
+        console.error("Error fetching artist data:", error);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchArtistSongs();
+    fetchArtistData();
   }, [artistName]);
 
   return (
@@ -60,18 +66,36 @@ export default function ArtistPage() {
         <Navbar />
 
         <div className="max-w-[964px] mx-auto">
-          {/* Artist Header */}
-          <div className="mb-8">
-            <button
-              onClick={() => router.back()}
-              className="text-[18px] font-semibold hover:underline cursor-pointer mb-4"
-            >
-              ← Back
-            </button>
-            <h1 className="text-[56px] font-bold leading-none mb-2">{artistName}</h1>
-            <p className="text-[24px] opacity-70">
-              {songs.length} {songs.length === 1 ? "song" : "songs"}
-            </p>
+          <button
+            onClick={() => router.back()}
+            className="text-[18px] font-semibold hover:underline cursor-pointer mb-6"
+          >
+            ← Back
+          </button>
+
+          {/* Artist Header with Image */}
+          <div className="flex items-start gap-6 mb-12">
+            {/* Artist Image */}
+            {artist?.image_url && (
+              <div className="shrink-0">
+                <Image
+                  src={artist.image_url}
+                  alt={`${artistName} photo`}
+                  width={240}
+                  height={240}
+                  className="w-60 h-60 object-cover"
+                  priority
+                />
+              </div>
+            )}
+
+            {/* Artist Info */}
+            <div className="flex-1 flex flex-col justify-center">
+              <h1 className="text-[56px] font-bold leading-none mb-2">{artistName}</h1>
+              <p className="text-[24px] opacity-70">
+                {songs.length} {songs.length === 1 ? "song" : "songs"}
+              </p>
+            </div>
           </div>
 
           {/* Songs List */}

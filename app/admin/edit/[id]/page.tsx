@@ -144,6 +144,24 @@ export default function EditSongPage() {
         preview_url: data.preview_url || formData.preview_url,
       });
 
+      // Save artist data to database
+      if (data.artists && Array.isArray(data.artists)) {
+        for (const artist of data.artists) {
+          try {
+            // Upsert artist (insert or update if exists)
+            await supabase.from("artists").upsert({
+              name: artist.name,
+              image_url: artist.image_url,
+              spotify_id: artist.spotify_id,
+            }, {
+              onConflict: 'name'
+            });
+          } catch (artistError) {
+            console.error(`Failed to save artist ${artist.name}:`, artistError);
+          }
+        }
+      }
+
       setMessage({ type: "success", text: "Fetched Spotify data! Review and save." });
       setSpotifyUrl(""); // Clear URL field
     } catch (error) {
