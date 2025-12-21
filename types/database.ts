@@ -7,6 +7,7 @@ export interface Song {
   cover_url: string | null;
   comment: string | null;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface Award {

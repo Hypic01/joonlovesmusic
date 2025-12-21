@@ -138,6 +138,19 @@ export default function SongDetailPage() {
               </div>
             </div>
 
+            {/* Last Updated */}
+            {song.updated_at && (
+              <div className="text-[14px] opacity-60 mt-4">
+                Last updated: {new Date(song.updated_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </div>
+            )}
+
             {/* Awards Section */}
             {awards.length > 0 && (
               <div className="mb-12">
