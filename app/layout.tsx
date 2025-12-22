@@ -45,8 +45,8 @@ export default function RootLayout({
       >
         {/* Background vectors - persists across all pages for continuous animation */}
         <BackgroundLines />
-        {/* Global page margin: 20px on all sides */}
-        <div className="h-dvh w-full p-5 overflow-hidden overflow-x-hidden">{children}</div>
+        {/* Global container - no vertical padding so items scroll to screen edge */}
+        <div className="h-dvh w-full px-5 overflow-hidden overflow-x-hidden">{children}</div>
       </body>
     </html>
   );
