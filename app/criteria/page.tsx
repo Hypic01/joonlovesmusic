@@ -22,117 +22,107 @@ export default function CriteriaPage() {
               </p>
 
               <p className="text-[24px] mb-8">
-                70 Rating is actually considered pretty good! I set the average to be around 50.
+                Rating above 70 is actually considered pretty good! I set the average to be around 50.
               </p>
 
               {/* 90-100 */}
               <div className="mb-6">
                 <h2 className="text-[40px] font-bold mb-2">90–100 — Desert island</h2>
-                <p className="mb-3 text-[22px]">If I could only keep a few songs forever, this would be one of them.</p>
                 <div className="ml-6 space-y-1 text-[22px]">
-                  <p><strong>99–100:</strong> I can&apos;t imagine my life without this song</p>
-                  <p><strong>96–98:</strong> I come back to this constantly, year after year</p>
-                  <p><strong>93–95:</strong> This is one of my personal favorites</p>
-                  <p><strong>90–92:</strong> This clearly belongs in my all-time tier</p>
+                  <p><strong>99–100:</strong> I can&apos;t imagine my life without this</p>
+                  <p><strong>96–98:</strong> I return to this constantly over time</p>
+                  <p><strong>93–95:</strong> This is one of my favorites</p>
+                  <p><strong>90–92:</strong> This clearly belongs at the top</p>
                 </div>
               </div>
 
               {/* 80-89 */}
               <div className="mb-6">
                 <h2 className="text-[40px] font-bold mb-2">80–89 — Very good</h2>
-                <p className="mb-3 text-[22px]">I actively choose to listen to this and revisit it often.</p>
                 <div className="ml-6 space-y-1 text-[22px]">
-                  <p><strong>87–89:</strong> I strongly recommend this to people</p>
-                  <p><strong>84–86:</strong> I intentionally replay this</p>
-                  <p><strong>80–83:</strong> I&apos;m always happy when this comes on</p>
+                  <p><strong>87–89:</strong> I love this and would recommend it</p>
+                  <p><strong>84–86:</strong> I actively replay this</p>
+                  <p><strong>80–83:</strong> I consistently enjoy this</p>
                 </div>
               </div>
 
               {/* 70-79 */}
               <div className="mb-6">
                 <h2 className="text-[40px] font-bold mb-2">70–79 — Playlist lock</h2>
-                <p className="mb-3 text-[22px]">This stays saved. I don&apos;t skip it.</p>
                 <div className="ml-6 space-y-1 text-[22px]">
-                  <p><strong>77–79:</strong> This noticeably elevates a playlist</p>
-                  <p><strong>74–76:</strong> I regularly enjoy this</p>
-                  <p><strong>70–73:</strong> Easy keep, no reason to remove</p>
+                  <p><strong>77–79:</strong> This stands out in a great way</p>
+                  <p><strong>74–76:</strong> I enjoy this regularly</p>
+                  <p><strong>70–73:</strong> I&apos;m happy to keep this saved</p>
                 </div>
               </div>
 
               {/* 60-69 */}
               <div className="mb-6">
                 <h2 className="text-[40px] font-bold mb-2">60–69 — Worth keeping</h2>
-                <p className="mb-3 text-[22px]">Not a go-to, but I&apos;m glad I have it for the right moment.</p>
                 <div className="ml-6 space-y-1 text-[22px]">
-                  <p><strong>67–69:</strong> I appreciate this more over time</p>
-                  <p><strong>64–66:</strong> There&apos;s something catchy or appealing here</p>
-                  <p><strong>60–63:</strong> It&apos;s good, but not essential</p>
+                  <p><strong>67–69:</strong> I enjoy this more than average</p>
+                  <p><strong>64–66:</strong> I generally enjoy this</p>
+                  <p><strong>60–63:</strong> I like this sometimes</p>
                 </div>
               </div>
 
               {/* 50-59 */}
               <div className="mb-6">
                 <h2 className="text-[40px] font-bold mb-2">50–59 — Fine in the moment</h2>
-                <p className="mb-3 text-[22px]">It works while it&apos;s on, but I don&apos;t think about it later.</p>
                 <div className="ml-6 space-y-1 text-[22px]">
-                  <p><strong>57–59:</strong> Mildly enjoyable</p>
-                  <p><strong>54–56:</strong> Fine as background</p>
-                  <p><strong>50–53:</strong> Neutral reaction</p>
+                  <p><strong>57–59:</strong> I mildly enjoy this while it&apos;s on</p>
+                  <p><strong>54–56:</strong> I&apos;m okay with this as background</p>
+                  <p><strong>50–53:</strong> I feel neutral about this</p>
                 </div>
               </div>
 
               {/* 40-49 */}
               <div className="mb-6">
-                <h2 className="text-[40px] font-bold mb-2">40–49 — Nice idea, doesn&apos;t land</h2>
-                <p className="mb-3 text-[22px]">I see what it&apos;s trying to do, but it doesn&apos;t really work for me.</p>
+                <h2 className="text-[40px] font-bold mb-2">40–49 — Below average</h2>
                 <div className="ml-6 space-y-1 text-[22px]">
-                  <p><strong>47–49:</strong> Almost enjoyable</p>
-                  <p><strong>44–46:</strong> I&apos;m often tempted to skip</p>
-                  <p><strong>40–43:</strong> One part is okay, the rest isn&apos;t</p>
+                  <p><strong>47–49:</strong> I sometimes enjoy this</p>
+                  <p><strong>44–46:</strong> I&apos;m mostly indifferent to this</p>
+                  <p><strong>40–43:</strong> I rarely enjoy this</p>
                 </div>
               </div>
 
               {/* 30-39 */}
               <div className="mb-6">
                 <h2 className="text-[40px] font-bold mb-2">30–39 — Meh</h2>
-                <p className="mb-3 text-[22px]">Nothing pulls me in, and I won&apos;t replay it.</p>
                 <div className="ml-6 space-y-1 text-[22px]">
-                  <p><strong>37–39:</strong> Close to being okay, but still uninteresting</p>
-                  <p><strong>34–36:</strong> A few moments, no impact</p>
-                  <p><strong>30–33:</strong> Bland and forgettable</p>
+                  <p><strong>37–39:</strong> I don&apos;t enjoy this much</p>
+                  <p><strong>34–36:</strong> I usually don&apos;t enjoy this</p>
+                  <p><strong>30–33:</strong> I don&apos;t enjoy this</p>
                 </div>
               </div>
 
               {/* 20-29 */}
               <div className="mb-6">
                 <h2 className="text-[40px] font-bold mb-2">20–29 — Boring</h2>
-                <p className="mb-3 text-[22px]">It drags or feels generic. I don&apos;t want to hear it again.</p>
                 <div className="ml-6 space-y-1 text-[22px]">
-                  <p><strong>27–29:</strong> Slightly better than boring, still dull</p>
-                  <p><strong>24–26:</strong> No spark at all</p>
-                  <p><strong>20–23:</strong> Hard to sit through</p>
+                  <p><strong>27–29:</strong> I find this unengaging</p>
+                  <p><strong>24–26:</strong> I find this boring</p>
+                  <p><strong>20–23:</strong> I really don&apos;t enjoy this</p>
                 </div>
               </div>
 
               {/* 10-19 */}
               <div className="mb-6">
-                <h2 className="text-[40px] font-bold mb-2">10–19 — Rarely want to hear it again</h2>
-                <p className="mb-3 text-[22px]">I skip this quickly.</p>
+                <h2 className="text-[40px] font-bold mb-2">10–19 — Rarely want to hear again</h2>
                 <div className="ml-6 space-y-1 text-[22px]">
-                  <p><strong>17–19:</strong> I tolerate it briefly</p>
-                  <p><strong>14–16:</strong> I skip it most of the time</p>
-                  <p><strong>10–13:</strong> Immediate skip</p>
+                  <p><strong>17–19:</strong> I can tolerate this briefly</p>
+                  <p><strong>14–16:</strong> I usually skip this</p>
+                  <p><strong>10–13:</strong> I skip this immediately</p>
                 </div>
               </div>
 
               {/* 0-9 */}
               <div className="mb-6">
-                <h2 className="text-[40px] font-bold mb-2">0–9 — Please don&apos;t play this in front of me</h2>
-                <p className="mb-3 text-[22px]">Strong negative reaction.</p>
+                <h2 className="text-[40px] font-bold mb-2">0–9 — Please don&apos;t play this</h2>
                 <div className="ml-6 space-y-1 text-[22px]">
-                  <p><strong>7–9:</strong> I really don&apos;t like this</p>
-                  <p><strong>4–6:</strong> Actively annoying</p>
-                  <p><strong>0–3:</strong> Turn it off immediately</p>
+                  <p><strong>7–9:</strong> I dislike this</p>
+                  <p><strong>4–6:</strong> I strongly dislike this</p>
+                  <p><strong>0–3:</strong> I can&apos;t stand this</p>
                 </div>
               </div>
             </div>
