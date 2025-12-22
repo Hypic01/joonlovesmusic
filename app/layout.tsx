@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Jersey_10, Geist_Mono } from "next/font/google";
+import { Jersey_10, Geist_Mono, Noto_Sans_KR, Noto_Sans_JP } from "next/font/google";
 import "./globals.css";
 import BackgroundLines from "./components/BackgroundLines";
 
@@ -12,6 +12,20 @@ const jersey10 = Jersey_10({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const notoSansKR = Noto_Sans_KR({
+  variable: "--font-noto-sans-kr",
+  weight: ["400", "700", "900"],
+  subsets: ["latin"],
+  preload: false,
+});
+
+const notoSansJP = Noto_Sans_JP({
+  variable: "--font-noto-sans-jp",
+  weight: ["400", "700", "900"],
+  subsets: ["latin"],
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -27,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${jersey10.variable} ${geistMono.variable} antialiased font-sans bg-background text-foreground overflow-hidden`}
+        className={`${jersey10.variable} ${geistMono.variable} ${notoSansKR.variable} ${notoSansJP.variable} antialiased font-sans bg-background text-foreground overflow-hidden`}
       >
         {/* Background vectors - persists across all pages for continuous animation */}
         <BackgroundLines />

@@ -79,51 +79,100 @@ export default function ArtistPage() {
           </button>
 
           {/* Artist Header with Image */}
-          <div className="flex items-start gap-6 mb-12">
-            {/* Artist Image - always reserve space */}
-            <div className="shrink-0 w-60 h-60">
-              {loading ? (
-                <div className="w-60 h-60 bg-neutral-200 animate-pulse" />
-              ) : artist?.image_url ? (
-                <Image
-                  src={artist.image_url}
-                  alt={`${artistName} photo`}
-                  width={240}
-                  height={240}
-                  className="w-60 h-60 object-cover"
-                  priority
-                />
-              ) : (
-                <div className="w-60 h-60 bg-neutral-200 flex items-center justify-center">
-                  <span className="text-[64px] opacity-30">{artistName.charAt(0).toUpperCase()}</span>
+          <div className="mb-8 sm:mb-12">
+            {/* Mobile Layout */}
+            <div className="sm:hidden">
+              {/* Top: Artist Image + Rating side by side */}
+              <div className="flex gap-4 mb-4">
+                <div className="w-32 h-32 shrink-0">
+                  {loading ? (
+                    <div className="w-32 h-32 bg-neutral-200 animate-pulse" />
+                  ) : artist?.image_url ? (
+                    <Image
+                      src={artist.image_url}
+                      alt={`${artistName} photo`}
+                      width={128}
+                      height={128}
+                      className="w-32 h-32 object-cover"
+                      priority
+                    />
+                  ) : (
+                    <div className="w-32 h-32 bg-neutral-200 flex items-center justify-center">
+                      <span className="text-[48px] opacity-30">{artistName.charAt(0).toUpperCase()}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-
-            {/* Artist Info and Average Rating */}
-            <div className="flex-1 flex items-start justify-between gap-6">
-              {/* Artist Info */}
-              <div className="flex-1 flex flex-col justify-center">
-                <h1 className="text-[56px] font-bold leading-none mb-2">{artistName}</h1>
-                <p className="text-[24px] opacity-70">
+                <div className="flex-1" />
+                {songs.length > 0 && (
+                  <div className="shrink-0">
+                    <div
+                      className="w-20 h-20 flex items-center justify-center"
+                      style={{ backgroundColor: getRatingColor(averageRating) }}
+                    >
+                      <span className="text-[40px] font-black">{averageRating}</span>
+                    </div>
+                    <div className="text-[12px] opacity-60 mt-1 text-center">
+                      Avg Rating
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Bottom: Artist Info */}
+              <div>
+                <h1 className="text-[32px] font-bold leading-none mb-1">{artistName}</h1>
+                <p className="text-[16px] opacity-70">
                   {songs.length} {songs.length === 1 ? "song" : "songs"}
                 </p>
               </div>
+            </div>
 
-              {/* Average Rating */}
-              {songs.length > 0 && (
-                <div className="shrink-0">
-                  <div
-                    className="w-32 h-32 flex items-center justify-center"
-                    style={{ backgroundColor: getRatingColor(averageRating) }}
-                  >
-                    <span className="text-[64px] font-black">{averageRating}</span>
+            {/* Tablet/Desktop Layout */}
+            <div className="hidden sm:flex items-start gap-4 lg:gap-6">
+              {/* Artist Image - always reserve space */}
+              <div className="shrink-0 w-40 h-40 lg:w-60 lg:h-60">
+                {loading ? (
+                  <div className="w-full h-full bg-neutral-200 animate-pulse" />
+                ) : artist?.image_url ? (
+                  <Image
+                    src={artist.image_url}
+                    alt={`${artistName} photo`}
+                    width={240}
+                    height={240}
+                    className="w-full h-full object-cover"
+                    priority
+                  />
+                ) : (
+                  <div className="w-full h-full bg-neutral-200 flex items-center justify-center">
+                    <span className="text-[48px] lg:text-[64px] opacity-30">{artistName.charAt(0).toUpperCase()}</span>
                   </div>
-                  <div className="text-[14px] opacity-60 mt-2 text-center">
-                    Average Rating
-                  </div>
+                )}
+              </div>
+
+              {/* Artist Info and Average Rating */}
+              <div className="flex-1 flex items-start justify-between gap-4 lg:gap-6">
+                {/* Artist Info */}
+                <div className="flex-1 flex flex-col justify-center min-w-0">
+                  <h1 className="text-[36px] lg:text-[56px] font-bold leading-none mb-2 truncate">{artistName}</h1>
+                  <p className="text-[18px] lg:text-[24px] opacity-70">
+                    {songs.length} {songs.length === 1 ? "song" : "songs"}
+                  </p>
                 </div>
-              )}
+
+                {/* Average Rating */}
+                {songs.length > 0 && (
+                  <div className="shrink-0">
+                    <div
+                      className="w-24 h-24 lg:w-32 lg:h-32 flex items-center justify-center"
+                      style={{ backgroundColor: getRatingColor(averageRating) }}
+                    >
+                      <span className="text-[48px] lg:text-[64px] font-black">{averageRating}</span>
+                    </div>
+                    <div className="text-[12px] lg:text-[14px] opacity-60 mt-2 text-center">
+                      Average Rating
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -147,27 +196,34 @@ export default function ArtistPage() {
                   onClick={() => router.push(`/musics/${song.id}`)}
                   className="block p-3 md:p-4 border-2 border-black bg-white hover:border-(--color-brand-red) cursor-pointer"
                 >
-                  {/* Mobile Layout */}
-                  <div className="flex md:hidden gap-3">
-                    {/* Left: Rank + Album Cover */}
-                    <div className="flex flex-col items-center gap-1 shrink-0">
-                      <div className="text-[28px] font-black">{song.rank}</div>
+                  {/* Mobile Layout - Square-ish */}
+                  <div className="sm:hidden">
+                    {/* Top Row: Rank + Album Cover + Rating */}
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="text-[32px] font-black w-10 text-center">{song.rank}</div>
                       {song.cover_url ? (
                         <Image
                           src={song.cover_url}
                           alt={`${song.title} cover`}
-                          width={64}
-                          height={64}
-                          className="w-16 h-16 object-cover"
+                          width={80}
+                          height={80}
+                          className="w-20 h-20 object-cover"
                         />
                       ) : (
-                        <div className="w-16 h-16 bg-neutral-300" />
+                        <div className="w-20 h-20 bg-neutral-300" />
                       )}
+                      <div className="flex-1" />
+                      <div
+                        className="w-16 h-16 flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: getRatingColor(song.rating) }}
+                      >
+                        <span className="text-[32px] font-black">{song.rating}</span>
+                      </div>
                     </div>
 
-                    {/* Middle: Song Info */}
-                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <h3 className="text-[20px] font-bold leading-tight truncate">
+                    {/* Bottom Row: Song Info */}
+                    <div className="pl-12">
+                      <h3 className="text-[22px] font-bold leading-tight truncate">
                         {song.title}
                       </h3>
                       {song.album_name && (
@@ -176,20 +232,12 @@ export default function ArtistPage() {
                         </p>
                       )}
                     </div>
-
-                    {/* Right: Rating */}
-                    <div
-                      className="w-14 h-14 flex items-center justify-center shrink-0 self-center"
-                      style={{ backgroundColor: getRatingColor(song.rating) }}
-                    >
-                      <span className="text-[28px] font-black">{song.rating}</span>
-                    </div>
                   </div>
 
-                  {/* Desktop Layout */}
-                  <div className="hidden md:flex items-center gap-4">
+                  {/* Tablet/Desktop Layout - Single Row */}
+                  <div className="hidden sm:flex items-center gap-3 lg:gap-4">
                     {/* Rank */}
-                    <div className="w-16 text-center text-[48px] font-black">
+                    <div className="w-12 lg:w-16 text-center text-[36px] lg:text-[48px] font-black">
                       {song.rank}
                     </div>
 
@@ -200,20 +248,20 @@ export default function ArtistPage() {
                         alt={`${song.title} cover`}
                         width={96}
                         height={96}
-                        className="w-24 h-24 object-cover shrink-0"
+                        className="w-20 h-20 lg:w-24 lg:h-24 object-cover shrink-0"
                       />
                     ) : (
-                      <div className="w-24 h-24 bg-neutral-300 shrink-0" />
+                      <div className="w-20 h-20 lg:w-24 lg:h-24 bg-neutral-300 shrink-0" />
                     )}
 
                     {/* Song Info */}
-                    <div className="flex-1">
-                      <h3 className="text-[32px] font-bold leading-none">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-[24px] lg:text-[32px] font-bold leading-none truncate">
                         {song.title}
                       </h3>
                       {song.album_name && (
                         <p
-                          className="text-[18px] opacity-70 hover:underline cursor-pointer"
+                          className="text-[14px] lg:text-[18px] opacity-70 hover:underline cursor-pointer truncate"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -229,14 +277,14 @@ export default function ArtistPage() {
 
                     {/* Rating */}
                     <div
-                      className="w-24 h-24 flex items-center justify-center shrink-0"
+                      className="w-16 h-16 lg:w-24 lg:h-24 flex items-center justify-center shrink-0"
                       style={{ backgroundColor: getRatingColor(song.rating) }}
                     >
-                      <span className="text-[40px] font-black">{song.rating}</span>
+                      <span className="text-[32px] lg:text-[40px] font-black">{song.rating}</span>
                     </div>
 
-                    {/* Arrow */}
-                    <button className="w-16 h-16 flex items-center justify-center shrink-0 hover:opacity-60 cursor-pointer">
+                    {/* Arrow - hidden on tablet, visible on desktop */}
+                    <button className="hidden lg:flex w-16 h-16 items-center justify-center shrink-0 hover:opacity-60 cursor-pointer">
                       <svg
                         width="32"
                         height="32"

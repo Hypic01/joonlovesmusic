@@ -161,36 +161,114 @@ export default function SongDetailPage() {
 
             {/* Song Header - Responsive Layout */}
             <div className="mb-6">
-              {/* Desktop: Album cover on left, player below */}
-              <div className="flex flex-col md:flex-row md:items-start gap-6">
+              {/* Mobile Layout */}
+              <div className="sm:hidden">
+                {/* Top: Album Cover + Rating side by side */}
+                <div className="flex gap-4 mb-4">
+                  <div className="w-32 h-32 shrink-0">
+                    {song.cover_url ? (
+                      <Image
+                        src={song.cover_url}
+                        alt={`${song.title} cover`}
+                        width={128}
+                        height={128}
+                        className="w-32 h-32 object-cover"
+                        priority
+                      />
+                    ) : (
+                      <div className="w-32 h-32 bg-neutral-300" />
+                    )}
+                  </div>
+                  <div className="flex-1" />
+                  <div className="shrink-0">
+                    <div
+                      className="w-20 h-20 flex items-center justify-center"
+                      style={{ backgroundColor: getRatingColor(song.rating) }}
+                    >
+                      <span className="text-[40px] font-black">{song.rating}</span>
+                    </div>
+                    {song.updated_at && (
+                      <div className="text-[12px] opacity-60 mt-1 text-center">
+                        {new Date(song.updated_at).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: '2-digit'
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* Bottom: Song Info */}
+                <div>
+                  <h1 className="text-[32px] font-bold leading-none mb-1">
+                    {song.title}
+                  </h1>
+                  {song.album_name && (
+                    <p
+                      className="text-[16px] font-normal opacity-70 mb-1 hover:underline cursor-pointer"
+                      onClick={() => {
+                        if (song.album_name) {
+                          router.push(`/albums/${encodeURIComponent(song.album_name)}`);
+                        }
+                      }}
+                    >
+                      {song.album_name}
+                    </p>
+                  )}
+                  <div className="text-[18px] font-normal">
+                    {song.artist.split(',').map((artist, index, array) => (
+                      <span key={index}>
+                        <span
+                          className="hover:underline cursor-pointer"
+                          onClick={() => router.push(`/artists/${encodeURIComponent(artist.trim())}`)}
+                        >
+                          {artist.trim()}
+                        </span>
+                        {index < array.length - 1 && <span>, </span>}
+                      </span>
+                    ))}
+                  </div>
+                  {song.release_date && (
+                    <p className="text-[14px] opacity-60 mt-2">
+                      Released: {new Date(song.release_date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Tablet/Desktop Layout */}
+              <div className="hidden sm:flex sm:flex-row sm:items-start gap-4 lg:gap-6">
                 {/* Album Cover */}
-                <div className="shrink-0" style={{ width: '240px' }}>
+                <div className="shrink-0 w-40 h-40 lg:w-60 lg:h-60">
                   {song.cover_url ? (
                     <Image
                       src={song.cover_url}
                       alt={`${song.title} cover`}
                       width={240}
                       height={240}
-                      className="w-full object-cover"
-                      style={{ aspectRatio: '1/1' }}
+                      className="w-full h-full object-cover"
                       priority
                     />
                   ) : (
-                    <div className="w-full bg-neutral-300" style={{ aspectRatio: '1/1' }} />
+                    <div className="w-full h-full bg-neutral-300" />
                   )}
                 </div>
 
-                {/* Song Info and Rating (Desktop) */}
-                <div className="flex-1 flex items-start justify-between gap-6">
+                {/* Song Info and Rating */}
+                <div className="flex-1 flex items-start justify-between gap-4 lg:gap-6">
                   {/* Song Info */}
-                  <div className="flex-1 flex flex-col" style={{ minHeight: '240px' }}>
+                  <div className="flex-1 flex flex-col min-w-0" style={{ minHeight: '160px' }}>
                     <div>
-                      <h1 className="text-[56px] font-bold leading-none mb-2">
+                      <h1 className="text-[36px] lg:text-[56px] font-bold leading-none mb-2 truncate">
                         {song.title}
                       </h1>
                       {song.album_name && (
                         <p
-                          className="text-[24px] font-normal opacity-70 mb-1 hover:underline cursor-pointer"
+                          className="text-[16px] lg:text-[24px] font-normal opacity-70 mb-1 hover:underline cursor-pointer truncate"
                           onClick={() => {
                             if (song.album_name) {
                               router.push(`/albums/${encodeURIComponent(song.album_name)}`);
@@ -200,7 +278,7 @@ export default function SongDetailPage() {
                           {song.album_name}
                         </p>
                       )}
-                      <div className="text-[32px] font-normal">
+                      <div className="text-[20px] lg:text-[32px] font-normal truncate">
                         {song.artist.split(',').map((artist, index, array) => (
                           <span key={index}>
                             <span
@@ -214,10 +292,10 @@ export default function SongDetailPage() {
                         ))}
                       </div>
                     </div>
-                    
+
                     {/* Release Date - Aligned to bottom */}
                     {song.release_date && (
-                      <p className="text-[16px] opacity-60 mt-auto">
+                      <p className="text-[14px] lg:text-[16px] opacity-60 mt-auto">
                         Released: {new Date(song.release_date).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
@@ -229,15 +307,15 @@ export default function SongDetailPage() {
 
                   {/* Rating with Last Updated */}
                   <div className="shrink-0">
-                    <div 
-                      className="w-32 h-32 flex items-center justify-center"
+                    <div
+                      className="w-24 h-24 lg:w-32 lg:h-32 flex items-center justify-center"
                       style={{ backgroundColor: getRatingColor(song.rating) }}
                     >
-                      <span className="text-[64px] font-black">{song.rating}</span>
+                      <span className="text-[48px] lg:text-[64px] font-black">{song.rating}</span>
                     </div>
                     {/* Last Updated */}
                     {song.updated_at && (
-                      <div className="text-[14px] opacity-60 mt-2 text-center">
+                      <div className="text-[12px] lg:text-[14px] opacity-60 mt-2 text-center">
                         Last updated:<br />
                         {new Date(song.updated_at).toLocaleDateString('en-US', {
                           year: 'numeric',

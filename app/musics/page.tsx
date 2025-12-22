@@ -189,42 +189,40 @@ export default function MusicsPage() {
                   prefetch={true}
                   className="block p-3 md:p-4 border-2 border-black bg-white hover:border-(--color-brand-red) cursor-pointer"
                 >
-                  {/* Mobile Layout */}
-                  <div className="flex md:hidden gap-3">
-                    {/* Left: Rank + Album Cover */}
-                    <div className="flex flex-col items-center gap-1 shrink-0">
-                      <div className="text-[28px] font-black">{song.rank}</div>
+                  {/* Mobile Layout - Square-ish */}
+                  <div className="sm:hidden">
+                    {/* Top Row: Rank + Album Cover + Rating */}
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="text-[32px] font-black w-10 text-center">{song.rank}</div>
                       {song.cover_url ? (
                         <Image
                           src={song.cover_url}
                           alt={`${song.title} cover`}
-                          width={64}
-                          height={64}
-                          className="w-16 h-16 object-cover"
+                          width={80}
+                          height={80}
+                          className="w-20 h-20 object-cover"
                           priority={song.rank <= 10}
                           loading={song.rank <= 10 ? "eager" : "lazy"}
                         />
                       ) : (
-                        <div className="w-16 h-16 bg-neutral-300" />
+                        <div className="w-20 h-20 bg-neutral-300" />
                       )}
+                      <div className="flex-1" />
+                      <div
+                        className="w-16 h-16 flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: getRatingColor(song.rating) }}
+                      >
+                        <span className="text-[32px] font-black">{song.rating}</span>
+                      </div>
                     </div>
 
-                    {/* Middle: Song Info */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-[20px] font-bold leading-tight truncate">
+                    {/* Bottom Row: Song Info */}
+                    <div className="pl-12">
+                      <h3 className="text-[22px] font-bold leading-tight truncate">
                         {song.title}
                       </h3>
                       {song.album_name && (
-                        <p
-                          className="text-[14px] font-normal opacity-70 truncate"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (song.album_name) {
-                              router.push(`/albums/${encodeURIComponent(song.album_name)}`);
-                            }
-                          }}
-                        >
+                        <p className="text-[14px] font-normal opacity-70 truncate">
                           {song.album_name}
                         </p>
                       )}
@@ -232,20 +230,12 @@ export default function MusicsPage() {
                         {song.artist}
                       </div>
                     </div>
-
-                    {/* Right: Rating */}
-                    <div
-                      className="w-14 h-14 flex items-center justify-center shrink-0 self-center"
-                      style={{ backgroundColor: getRatingColor(song.rating) }}
-                    >
-                      <span className="text-[28px] font-black">{song.rating}</span>
-                    </div>
                   </div>
 
-                  {/* Desktop Layout */}
-                  <div className="hidden md:flex items-center gap-4">
+                  {/* Tablet/Desktop Layout - Single Row */}
+                  <div className="hidden sm:flex items-center gap-3 lg:gap-4">
                     {/* Rank */}
-                    <div className="w-16 text-center text-[48px] font-black">
+                    <div className="w-12 lg:w-16 text-center text-[36px] lg:text-[48px] font-black">
                       {song.rank}
                     </div>
 
@@ -256,22 +246,22 @@ export default function MusicsPage() {
                         alt={`${song.title} cover`}
                         width={96}
                         height={96}
-                        className="w-24 h-24 object-cover shrink-0"
+                        className="w-20 h-20 lg:w-24 lg:h-24 object-cover shrink-0"
                         priority={song.rank <= 10}
                         loading={song.rank <= 10 ? "eager" : "lazy"}
                       />
                     ) : (
-                      <div className="w-24 h-24 bg-neutral-300 shrink-0" />
+                      <div className="w-20 h-20 lg:w-24 lg:h-24 bg-neutral-300 shrink-0" />
                     )}
 
                     {/* Song Info */}
-                    <div className="flex-1">
-                      <h3 className="text-[32px] font-bold leading-none">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-[24px] lg:text-[32px] font-bold leading-none truncate">
                         {song.title}
                       </h3>
                       {song.album_name && (
                         <p
-                          className="text-[18px] font-normal opacity-70 hover:underline cursor-pointer"
+                          className="text-[14px] lg:text-[18px] font-normal opacity-70 hover:underline cursor-pointer truncate"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -283,7 +273,7 @@ export default function MusicsPage() {
                           {song.album_name}
                         </p>
                       )}
-                      <div className="text-[20px]">
+                      <div className="text-[16px] lg:text-[20px] truncate">
                         {song.artist.split(',').map((artist, index, array) => (
                           <span key={index}>
                             <span
@@ -304,14 +294,14 @@ export default function MusicsPage() {
 
                     {/* Rating */}
                     <div
-                      className="w-24 h-24 flex items-center justify-center shrink-0"
+                      className="w-16 h-16 lg:w-24 lg:h-24 flex items-center justify-center shrink-0"
                       style={{ backgroundColor: getRatingColor(song.rating) }}
                     >
-                      <span className="text-[40px] font-black">{song.rating}</span>
+                      <span className="text-[32px] lg:text-[40px] font-black">{song.rating}</span>
                     </div>
 
-                    {/* Arrow */}
-                    <button className="w-16 h-16 flex items-center justify-center shrink-0 hover:opacity-60 cursor-pointer">
+                    {/* Arrow - hidden on tablet, visible on desktop */}
+                    <button className="hidden lg:flex w-16 h-16 items-center justify-center shrink-0 hover:opacity-60 cursor-pointer">
                       <svg
                         width="32"
                         height="32"
