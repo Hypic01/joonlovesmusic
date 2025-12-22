@@ -15,11 +15,11 @@ export default function EditSongPage() {
   const id = params.id as string;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [fetchingSpotify, setFetchingSpotify] = useState(false);
+  const [fetchingUrl, setFetchingUrl] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [song, setSong] = useState<Song | null>(null);
   const [awards, setAwards] = useState<Award[]>([]);
-  const [spotifyUrl, setSpotifyUrl] = useState("");
+  const [mediaUrl, setMediaUrl] = useState("");
   const [formData, setFormData] = useState({
     title: "",
     artist: "",
@@ -27,6 +27,7 @@ export default function EditSongPage() {
     comment: "",
     cover_url: "",
     spotify_track_id: "",
+    youtube_video_id: "",
     album_name: "",
     release_date: "",
     duration_ms: null as number | null,
@@ -72,6 +73,7 @@ export default function EditSongPage() {
           comment: songData.comment || "",
           cover_url: songData.cover_url || "",
           spotify_track_id: songData.spotify_track_id || "",
+          youtube_video_id: songData.youtube_video_id || "",
           album_name: songData.album_name || "",
           release_date: songData.release_date || "",
           duration_ms: songData.duration_ms || null,
@@ -103,72 +105,115 @@ export default function EditSongPage() {
     fetchSong();
   }, [id]);
 
-  const handleFetchFromSpotify = async () => {
-    if (!spotifyUrl.trim()) {
-      setMessage({ type: "error", text: "Please enter a Spotify URL" });
+  // Detect URL type
+  const getUrlType = (url: string): "spotify" | "youtube" | null => {
+    if (url.includes("spotify.com") || url.includes("open.spotify")) {
+      return "spotify";
+    }
+    if (url.includes("youtube.com") || url.includes("youtu.be")) {
+      return "youtube";
+    }
+    return null;
+  };
+
+  const handleFetchFromUrl = async () => {
+    if (!mediaUrl.trim()) {
+      setMessage({ type: "error", text: "Please enter a Spotify or YouTube URL" });
       return;
     }
 
-    setFetchingSpotify(true);
+    const urlType = getUrlType(mediaUrl);
+    if (!urlType) {
+      setMessage({ type: "error", text: "Please enter a valid Spotify or YouTube URL" });
+      return;
+    }
+
+    setFetchingUrl(true);
     setMessage(null);
 
     try {
-      const response = await fetch("/api/spotify", {
+      const apiEndpoint = urlType === "spotify" ? "/api/spotify" : "/api/youtube";
+      const response = await fetch(apiEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: spotifyUrl }),
+        body: JSON.stringify({ url: mediaUrl }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch from Spotify");
+        throw new Error(data.error || `Failed to fetch from ${urlType}`);
       }
 
-      // Auto-fill the form with Spotify data
-      setFormData({
-        ...formData,
-        title: data.title || formData.title,
-        artist: data.artist || formData.artist,
-        cover_url: data.cover_url || formData.cover_url,
-        spotify_track_id: data.spotify_track_id || formData.spotify_track_id,
-        album_name: data.album_name || formData.album_name,
-        release_date: data.release_date || formData.release_date,
-        duration_ms: data.duration_ms || formData.duration_ms,
-        explicit: data.explicit || formData.explicit,
-        popularity: data.popularity || formData.popularity,
-        isrc: data.isrc || formData.isrc,
-        track_number: data.track_number || formData.track_number,
-        disc_number: data.disc_number || formData.disc_number,
-        album_type: data.album_type || formData.album_type,
-        preview_url: data.preview_url || formData.preview_url,
-      });
+      if (urlType === "spotify") {
+        // Auto-fill the form with Spotify data
+        setFormData({
+          ...formData,
+          title: data.title || formData.title,
+          artist: data.artist || formData.artist,
+          cover_url: data.cover_url || formData.cover_url,
+          spotify_track_id: data.spotify_track_id || formData.spotify_track_id,
+          youtube_video_id: "",
+          album_name: data.album_name || formData.album_name,
+          release_date: data.release_date || formData.release_date,
+          duration_ms: data.duration_ms || formData.duration_ms,
+          explicit: data.explicit || formData.explicit,
+          popularity: data.popularity || formData.popularity,
+          isrc: data.isrc || formData.isrc,
+          track_number: data.track_number || formData.track_number,
+          disc_number: data.disc_number || formData.disc_number,
+          album_type: data.album_type || formData.album_type,
+          preview_url: data.preview_url || formData.preview_url,
+        });
 
-      // Save artist data to database
-      if (data.artists && Array.isArray(data.artists)) {
-        for (const artist of data.artists) {
-          try {
-            // Upsert artist (insert or update if exists)
-            await supabase.from("artists").upsert({
-              name: artist.name,
-              image_url: artist.image_url,
-              spotify_id: artist.spotify_id,
-            }, {
-              onConflict: 'name'
-            });
-          } catch (artistError) {
-            console.error(`Failed to save artist ${artist.name}:`, artistError);
+        // Save artist data to database
+        if (data.artists && Array.isArray(data.artists)) {
+          for (const artist of data.artists) {
+            try {
+              await supabase.from("artists").upsert({
+                name: artist.name,
+                image_url: artist.image_url,
+                spotify_id: artist.spotify_id,
+              }, {
+                onConflict: 'name'
+              });
+            } catch (artistError) {
+              console.error(`Failed to save artist ${artist.name}:`, artistError);
+            }
           }
         }
+
+        setMessage({ type: "success", text: "Fetched Spotify data! Review and save." });
+      } else {
+        // Auto-fill the form with YouTube data
+        setFormData({
+          ...formData,
+          title: data.title || formData.title,
+          artist: data.artist || formData.artist,
+          cover_url: data.cover_url || formData.cover_url,
+          spotify_track_id: "",
+          youtube_video_id: data.youtube_video_id || formData.youtube_video_id,
+          album_name: formData.album_name,
+          release_date: data.release_date || formData.release_date,
+          duration_ms: data.duration_ms || formData.duration_ms,
+          explicit: formData.explicit,
+          popularity: formData.popularity,
+          isrc: formData.isrc,
+          track_number: formData.track_number,
+          disc_number: formData.disc_number,
+          album_type: formData.album_type,
+          preview_url: formData.preview_url,
+        });
+
+        setMessage({ type: "success", text: "Fetched YouTube data! Please verify and save." });
       }
 
-      setMessage({ type: "success", text: "Fetched Spotify data! Review and save." });
-      setSpotifyUrl(""); // Clear URL field
+      setMediaUrl(""); // Clear URL field
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to fetch from Spotify";
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch data";
       setMessage({ type: "error", text: errorMessage });
     } finally {
-      setFetchingSpotify(false);
+      setFetchingUrl(false);
     }
   };
 
@@ -185,6 +230,7 @@ export default function EditSongPage() {
         comment: formData.comment || null,
         cover_url: formData.cover_url || null,
         spotify_track_id: formData.spotify_track_id || null,
+        youtube_video_id: formData.youtube_video_id || null,
         album_name: formData.album_name || null,
         release_date: formData.release_date || null,
         duration_ms: formData.duration_ms,
@@ -298,27 +344,27 @@ export default function EditSongPage() {
             </div>
           )}
 
-          {/* Spotify Fetch Section */}
+          {/* Spotify/YouTube Fetch Section */}
           <div className="mb-8 p-6 border-2 border-black bg-neutral-50">
-            <h2 className="text-[24px] font-bold mb-4">Update from Spotify</h2>
+            <h2 className="text-[24px] font-bold mb-4">Update from Spotify or YouTube</h2>
             <p className="text-[16px] mb-4 opacity-70">
-              Paste a Spotify URL to update album name, release date, and other metadata
+              Paste a Spotify or YouTube URL to update metadata
             </p>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
-                value={spotifyUrl}
-                onChange={(e) => setSpotifyUrl(e.target.value)}
-                placeholder="https://open.spotify.com/track/..."
+                value={mediaUrl}
+                onChange={(e) => setMediaUrl(e.target.value)}
+                placeholder="https://open.spotify.com/track/... or https://youtube.com/watch?v=..."
                 className="flex-1 px-4 py-3 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red)"
               />
               <button
                 type="button"
-                onClick={handleFetchFromSpotify}
-                disabled={fetchingSpotify}
-                className="px-6 py-3 border-2 border-black bg-white hover:border-(--color-brand-red) font-semibold text-[18px] disabled:opacity-50 cursor-pointer"
+                onClick={handleFetchFromUrl}
+                disabled={fetchingUrl}
+                className="px-6 py-3 border-2 border-black bg-white hover:border-(--color-brand-red) font-semibold text-[18px] disabled:opacity-50 cursor-pointer whitespace-nowrap"
               >
-                {fetchingSpotify ? "Fetching..." : "Fetch from Spotify"}
+                {fetchingUrl ? "Fetching..." : "Fetch Info"}
               </button>
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "../components/Navbar";
@@ -24,6 +24,23 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 ];
 
 export default function MusicsPage() {
+  return (
+    <Suspense fallback={
+      <main className="relative h-full overflow-hidden">
+        <div className="relative z-10 h-full overflow-y-auto">
+          <Navbar />
+          <div className="max-w-[964px] mx-auto">
+            <p className="text-[24px] font-semibold">Loading...</p>
+          </div>
+        </div>
+      </main>
+    }>
+      <MusicsContent />
+    </Suspense>
+  );
+}
+
+function MusicsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -163,8 +180,8 @@ export default function MusicsPage() {
     }
   };
   return (
-    <main className="relative h-full overflow-hidden">
-        <div ref={scrollContainerRef} className="relative z-10 h-full overflow-y-auto">
+    <main className="relative h-full overflow-hidden overflow-x-hidden">
+        <div ref={scrollContainerRef} className="relative z-10 h-full overflow-y-auto overflow-x-hidden">
           <Navbar />
 
           {/* Search Bar and Sort */}
@@ -203,7 +220,7 @@ export default function MusicsPage() {
               <div ref={sortDropdownRef} className="relative">
                 <button
                   onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-                  className="flex items-center justify-between gap-3 px-4 py-4 text-[18px] border-2 border-black bg-white hover:border-(--color-brand-red) cursor-pointer font-semibold min-w-[240px]"
+                  className="flex items-center justify-between gap-3 px-4 py-4 text-[18px] border-2 border-black bg-white hover:border-(--color-brand-red) cursor-pointer font-semibold w-full md:min-w-[240px]"
                 >
                   <span>{SORT_OPTIONS.find(o => o.value === sortBy)?.label}</span>
                   <svg
@@ -399,7 +416,7 @@ export default function MusicsPage() {
           {/* Pagination */}
           {filteredSongs.length > 0 && (
             <div className="max-w-[964px] mx-auto mb-8">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <p className="text-[16px]">
                   Showing {startIndex + 1}-{Math.min(endIndex, filteredSongs.length)} of{" "}
                   {filteredSongs.length} {searchQuery ? "matching " : ""}songs
@@ -411,13 +428,13 @@ export default function MusicsPage() {
                     <button
                       onClick={() => goToPage(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer"
+                      className="px-3 sm:px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer text-[14px] sm:text-[16px]"
                     >
-                      Previous
+                      Prev
                     </button>
 
-                    {/* Page Numbers */}
-                    <div className="flex gap-2">
+                    {/* Page Numbers - hidden on mobile */}
+                    <div className="hidden sm:flex gap-2">
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                         (page) => (
                           <button
@@ -435,11 +452,16 @@ export default function MusicsPage() {
                       )}
                     </div>
 
+                    {/* Current page indicator - mobile only */}
+                    <span className="sm:hidden text-[14px] font-semibold px-2">
+                      {currentPage} / {totalPages}
+                    </span>
+
                     {/* Next Button */}
                     <button
                       onClick={() => goToPage(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer"
+                      className="px-3 sm:px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer text-[14px] sm:text-[16px]"
                     >
                       Next
                     </button>

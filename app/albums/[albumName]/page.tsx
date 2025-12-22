@@ -91,7 +91,7 @@ export default function AlbumPage() {
                   <div className="sm:hidden">
                     {/* Top Row: Track Number + Album Cover + Rating */}
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="text-[32px] font-black w-10 text-center">{song.track_number || index + 1}</div>
+                      <div className="text-[32px] font-black w-10 text-center">{index + 1}</div>
                       {song.cover_url ? (
                         <Image
                           src={song.cover_url}
@@ -125,7 +125,7 @@ export default function AlbumPage() {
                   <div className="hidden sm:flex items-center gap-3 lg:gap-4">
                     {/* Track Number */}
                     <div className="w-12 lg:w-16 text-center text-[36px] lg:text-[48px] font-black">
-                      {song.track_number || index + 1}
+                      {index + 1}
                     </div>
 
                     {/* Album Cover */}

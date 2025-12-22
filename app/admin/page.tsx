@@ -12,9 +12,9 @@ export default function AdminPage() {
   const router = useRouter();
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [fetchingSpotify, setFetchingSpotify] = useState(false);
+  const [fetchingUrl, setFetchingUrl] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [spotifyUrl, setSpotifyUrl] = useState("");
+  const [mediaUrl, setMediaUrl] = useState("");
   const [formData, setFormData] = useState({
     title: "",
     artist: "",
@@ -22,6 +22,7 @@ export default function AdminPage() {
     comment: "",
     cover_url: "",
     spotify_track_id: "",
+    youtube_video_id: "",
     album_name: "",
     release_date: "",
     duration_ms: null as number | null,
@@ -53,72 +54,115 @@ export default function AdminPage() {
     router.push("/admin/login");
   };
 
-  const handleFetchFromSpotify = async () => {
-    if (!spotifyUrl.trim()) {
-      setMessage({ type: "error", text: "Please enter a Spotify URL" });
+  // Detect URL type
+  const getUrlType = (url: string): "spotify" | "youtube" | null => {
+    if (url.includes("spotify.com") || url.includes("open.spotify")) {
+      return "spotify";
+    }
+    if (url.includes("youtube.com") || url.includes("youtu.be")) {
+      return "youtube";
+    }
+    return null;
+  };
+
+  const handleFetchFromUrl = async () => {
+    if (!mediaUrl.trim()) {
+      setMessage({ type: "error", text: "Please enter a Spotify or YouTube URL" });
       return;
     }
 
-    setFetchingSpotify(true);
+    const urlType = getUrlType(mediaUrl);
+    if (!urlType) {
+      setMessage({ type: "error", text: "Please enter a valid Spotify or YouTube URL" });
+      return;
+    }
+
+    setFetchingUrl(true);
     setMessage(null);
 
     try {
-      const response = await fetch("/api/spotify", {
+      const apiEndpoint = urlType === "spotify" ? "/api/spotify" : "/api/youtube";
+      const response = await fetch(apiEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: spotifyUrl }),
+        body: JSON.stringify({ url: mediaUrl }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch from Spotify");
+        throw new Error(data.error || `Failed to fetch from ${urlType}`);
       }
 
-      // Auto-fill the form
-      setFormData({
-        ...formData,
-        title: data.title || "",
-        artist: data.artist || "",
-        cover_url: data.cover_url || "",
-        spotify_track_id: data.spotify_track_id || "",
-        album_name: data.album_name || "",
-        release_date: data.release_date || "",
-        duration_ms: data.duration_ms || null,
-        explicit: data.explicit || false,
-        popularity: data.popularity || null,
-        isrc: data.isrc || "",
-        track_number: data.track_number || null,
-        disc_number: data.disc_number || null,
-        album_type: data.album_type || "",
-        preview_url: data.preview_url || "",
-      });
+      if (urlType === "spotify") {
+        // Auto-fill the form with Spotify data
+        setFormData({
+          ...formData,
+          title: data.title || "",
+          artist: data.artist || "",
+          cover_url: data.cover_url || "",
+          spotify_track_id: data.spotify_track_id || "",
+          youtube_video_id: "",
+          album_name: data.album_name || "",
+          release_date: data.release_date || "",
+          duration_ms: data.duration_ms || null,
+          explicit: data.explicit || false,
+          popularity: data.popularity || null,
+          isrc: data.isrc || "",
+          track_number: data.track_number || null,
+          disc_number: data.disc_number || null,
+          album_type: data.album_type || "",
+          preview_url: data.preview_url || "",
+        });
 
-      // Save artist data to database
-      if (data.artists && Array.isArray(data.artists)) {
-        for (const artist of data.artists) {
-          try {
-            // Upsert artist (insert or update if exists)
-            await supabase.from("artists").upsert({
-              name: artist.name,
-              image_url: artist.image_url,
-              spotify_id: artist.spotify_id,
-            }, {
-              onConflict: 'name'
-            });
-          } catch (artistError) {
-            console.error(`Failed to save artist ${artist.name}:`, artistError);
+        // Save artist data to database
+        if (data.artists && Array.isArray(data.artists)) {
+          for (const artist of data.artists) {
+            try {
+              await supabase.from("artists").upsert({
+                name: artist.name,
+                image_url: artist.image_url,
+                spotify_id: artist.spotify_id,
+              }, {
+                onConflict: 'name'
+              });
+            } catch (artistError) {
+              console.error(`Failed to save artist ${artist.name}:`, artistError);
+            }
           }
         }
+
+        setMessage({ type: "success", text: "Song info fetched from Spotify!" });
+      } else {
+        // Auto-fill the form with YouTube data
+        setFormData({
+          ...formData,
+          title: data.title || "",
+          artist: data.artist || "",
+          cover_url: data.cover_url || "",
+          spotify_track_id: "",
+          youtube_video_id: data.youtube_video_id || "",
+          album_name: "",
+          release_date: data.release_date || "",
+          duration_ms: data.duration_ms || null,
+          explicit: false,
+          popularity: null,
+          isrc: "",
+          track_number: null,
+          disc_number: null,
+          album_type: "",
+          preview_url: "",
+        });
+
+        setMessage({ type: "success", text: "Video info fetched from YouTube! Please verify the title and artist." });
       }
 
-      setMessage({ type: "success", text: "Song info fetched from Spotify!" });
-      setSpotifyUrl(""); // Clear the URL field after successful fetch
+      setMediaUrl(""); // Clear the URL field after successful fetch
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to fetch from Spotify";
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch data";
       setMessage({ type: "error", text: errorMessage });
     } finally {
-      setFetchingSpotify(false);
+      setFetchingUrl(false);
     }
   };
 
@@ -154,6 +198,7 @@ export default function AdminPage() {
         comment: formData.comment || null,
         cover_url: formData.cover_url || null,
         spotify_track_id: formData.spotify_track_id || null,
+        youtube_video_id: formData.youtube_video_id || null,
         album_name: formData.album_name || null,
         release_date: formData.release_date || null,
         duration_ms: formData.duration_ms,
@@ -176,6 +221,7 @@ export default function AdminPage() {
         comment: "",
         cover_url: "",
         spotify_track_id: "",
+        youtube_video_id: "",
         album_name: "",
         release_date: "",
         duration_ms: null,
@@ -252,28 +298,31 @@ export default function AdminPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Spotify URL Auto-fill */}
+              {/* Spotify/YouTube URL Auto-fill */}
               <div className="p-6 border-2 border-black bg-white mb-6">
                 <label className="block text-[20px] font-semibold mb-3">
-                  Or paste Spotify URL to auto-fill
+                  Paste Spotify or YouTube URL to auto-fill
                 </label>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <input
                     type="url"
-                    value={spotifyUrl}
-                    onChange={(e) => setSpotifyUrl(e.target.value)}
-                    placeholder="https://open.spotify.com/track/..."
+                    value={mediaUrl}
+                    onChange={(e) => setMediaUrl(e.target.value)}
+                    placeholder="https://open.spotify.com/track/... or https://youtube.com/watch?v=..."
                     className="flex-1 px-4 py-3 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red)"
                   />
                   <button
                     type="button"
-                    onClick={handleFetchFromSpotify}
-                    disabled={fetchingSpotify}
-                    className="px-6 py-3 border-2 border-black bg-white hover:border-(--color-brand-red) font-semibold text-[18px] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    onClick={handleFetchFromUrl}
+                    disabled={fetchingUrl}
+                    className="px-6 py-3 border-2 border-black bg-white hover:border-(--color-brand-red) font-semibold text-[18px] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap"
                   >
-                    {fetchingSpotify ? "Fetching..." : "Fetch from Spotify"}
+                    {fetchingUrl ? "Fetching..." : "Fetch Info"}
                   </button>
                 </div>
+                <p className="mt-2 text-[14px] opacity-60">
+                  Supports Spotify track URLs and YouTube video URLs
+                </p>
               </div>
 
               <div>

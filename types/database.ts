@@ -9,6 +9,7 @@ export interface Song {
   created_at: string;
   updated_at?: string;
   spotify_track_id?: string | null;
+  youtube_video_id?: string | null;
   album_name?: string | null;
   release_date?: string | null;
   duration_ms?: number | null;

@@ -168,11 +168,11 @@ export default function SongDetailPage() {
   }
 
   return (
-    <main className="relative h-full overflow-hidden">
-        <div className="relative z-10 h-full overflow-y-auto">
+    <main className="relative h-full overflow-hidden overflow-x-hidden">
+        <div className="relative z-10 h-full overflow-y-auto overflow-x-hidden">
           <Navbar />
 
-          <div className="max-w-[964px] mx-auto">
+          <div className="max-w-[964px] mx-auto overflow-hidden">
             {/* Back Button */}
             <button
               onClick={() => router.back()}
@@ -271,7 +271,7 @@ export default function SongDetailPage() {
               </div>
 
               {/* Tablet/Desktop Layout */}
-              <div className="hidden sm:flex sm:flex-row sm:items-start gap-4 lg:gap-6">
+              <div className="hidden sm:flex sm:flex-row sm:items-start gap-4 lg:gap-6 overflow-hidden">
                 {/* Album Cover */}
                 <div className="shrink-0 w-40 h-40 lg:w-60 lg:h-60">
                   {song.cover_url ? (
@@ -289,16 +289,16 @@ export default function SongDetailPage() {
                 </div>
 
                 {/* Song Info and Rating */}
-                <div className="flex-1 flex items-start justify-between gap-4 lg:gap-6">
+                <div className="flex-1 flex items-start justify-between gap-4 lg:gap-6 min-w-0">
                   {/* Song Info */}
                   <div className="flex-1 flex flex-col min-w-0" style={{ minHeight: '160px' }}>
-                    <div>
-                      <h1 className="text-[36px] lg:text-[56px] font-bold leading-none mb-2 truncate">
+                    <div className="overflow-hidden">
+                      <h1 className="text-[36px] lg:text-[56px] font-bold leading-tight mb-2 break-words">
                         {song.title}
                       </h1>
                       {song.album_name && (
                         <p
-                          className="text-[16px] lg:text-[24px] font-normal opacity-70 mb-1 hover:underline cursor-pointer truncate"
+                          className="text-[16px] lg:text-[24px] font-normal opacity-70 mb-1 hover:underline cursor-pointer break-words"
                           onClick={() => {
                             if (song.album_name) {
                               router.push(`/albums/${encodeURIComponent(song.album_name)}`);
@@ -308,7 +308,7 @@ export default function SongDetailPage() {
                           {song.album_name}
                         </p>
                       )}
-                      <div className="text-[20px] lg:text-[32px] font-normal truncate">
+                      <div className="text-[20px] lg:text-[32px] font-normal break-words">
                         {song.artist.split(',').map((artist, index, array) => (
                           <span key={index}>
                             <span
@@ -354,22 +354,39 @@ export default function SongDetailPage() {
                 </div>
               </div>
 
-              {/* Spotify Embed Player - Below everything */}
-              {song.spotify_track_id && (
+              {/* Media Player - Spotify or YouTube */}
+              {(song.spotify_track_id || song.youtube_video_id) && (
                 <div className="mt-16">
-                  <iframe
-                    src={`https://open.spotify.com/embed/track/${song.spotify_track_id}?utm_source=generator&theme=0`}
-                    frameBorder="0"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                    title={`Spotify player for ${song.title}`}
-                    style={{ 
-                      width: '400px', 
-                      height: '80px',
-                      maxWidth: '100%',
-                      border: 'none'
-                    }}
-                  />
+                  {song.spotify_track_id ? (
+                    <iframe
+                      src={`https://open.spotify.com/embed/track/${song.spotify_track_id}?utm_source=generator&theme=0`}
+                      frameBorder="0"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      title={`Spotify player for ${song.title}`}
+                      style={{
+                        width: '400px',
+                        height: '80px',
+                        maxWidth: '100%',
+                        border: 'none'
+                      }}
+                    />
+                  ) : song.youtube_video_id ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${song.youtube_video_id}`}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      loading="lazy"
+                      title={`YouTube player for ${song.title}`}
+                      style={{
+                        width: '100%',
+                        maxWidth: '560px',
+                        aspectRatio: '16/9',
+                        border: 'none'
+                      }}
+                    />
+                  ) : null}
                 </div>
               )}
             </div>
