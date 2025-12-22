@@ -21,6 +21,10 @@ export default function CriteriaPage() {
                 I rate songs on a 0–100 scale. Higher scores mean I personally replay it more, feel more strongly about it, and would miss it if it disappeared.
               </p>
 
+              <p className="text-[24px] mb-8">
+                70 Rating is actually considered pretty good! I set the average to be around 50.
+              </p>
+
               {/* 90-100 */}
               <div className="mb-6">
                 <h2 className="text-[40px] font-bold mb-2">90–100 — Desert island</h2>
