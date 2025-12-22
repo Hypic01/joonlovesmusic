@@ -351,8 +351,8 @@ function MusicsContent() {
                         {song.title}
                       </h3>
                       {song.album_name && (
-                        <p
-                          className="text-[14px] lg:text-[18px] font-normal opacity-70 hover:underline cursor-pointer truncate"
+                        <span
+                          className="block max-w-fit text-[14px] lg:text-[18px] font-normal opacity-70 hover:underline cursor-pointer truncate"
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -362,7 +362,7 @@ function MusicsContent() {
                           }}
                         >
                           {song.album_name}
-                        </p>
+                        </span>
                       )}
                       <div className="text-[16px] lg:text-[20px] truncate">
                         {song.artist.split(',').map((artist, index, array) => (
