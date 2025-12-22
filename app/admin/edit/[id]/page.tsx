@@ -419,13 +419,17 @@ export default function EditSongPage() {
                 Release Date
               </label>
               <input
-                type="date"
+                type="text"
                 value={formData.release_date}
                 onChange={(e) =>
                   setFormData({ ...formData, release_date: e.target.value })
                 }
+                placeholder="YYYY, YYYY-MM, or YYYY-MM-DD"
                 className="w-full px-4 py-3 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red)"
               />
+              <p className="mt-1 text-[14px] opacity-60">
+                Accepts: 2020, 2020-03, or 2020-03-15
+              </p>
             </div>
 
             {/* Awards section - placeholder for future */}

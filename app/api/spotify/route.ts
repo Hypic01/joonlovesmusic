@@ -91,6 +91,10 @@ export async function POST(request: NextRequest) {
     const artist = trackData.artists?.map((a: { name: string }) => a.name).join(", ") || "";
     const cover_url = trackData.album?.images?.[0]?.url || trackData.album?.images?.[1]?.url || "";
     const album_name = trackData.album?.name || "";
+
+    // Release date - Spotify returns different precision levels:
+    // "2020" (year), "2020-03" (month), "2020-03-15" (day)
+    // We accept all formats
     const release_date = trackData.album?.release_date || null;
     const duration_ms = trackData.duration_ms || null;
     const explicit = trackData.explicit || false;

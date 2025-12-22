@@ -8,6 +8,32 @@ import Image from "next/image";
 import type { Song, Award, RatingHistory, CommentHistory } from "@/types/database";
 import { getRatingColor } from "@/lib/ratingColors";
 
+// Format release date based on precision (YYYY, YYYY-MM, or YYYY-MM-DD)
+function formatReleaseDate(dateStr: string): string {
+  if (!dateStr) return "";
+
+  // Year only: "2020"
+  if (/^\d{4}$/.test(dateStr)) {
+    return dateStr;
+  }
+
+  // Year-month: "2020-03"
+  if (/^\d{4}-\d{2}$/.test(dateStr)) {
+    const [year, month] = dateStr.split("-");
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "long" });
+  }
+
+  // Full date: "2020-03-15"
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const date = new Date(dateStr + "T00:00:00");
+    return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  }
+
+  // Fallback - return as is
+  return dateStr;
+}
+
 // Force dynamic rendering to avoid build-time errors with environment variables
 export const dynamic = 'force-dynamic';
 
@@ -147,6 +173,14 @@ export default function SongDetailPage() {
           <Navbar />
 
           <div className="max-w-[964px] mx-auto">
+            {/* Back Button */}
+            <button
+              onClick={() => router.back()}
+              className="text-[18px] font-semibold hover:underline cursor-pointer mb-6"
+            >
+              ← Back
+            </button>
+
             {/* Edit Button - Only show if admin */}
             {isAdmin && (
               <div className="mb-6">
@@ -230,11 +264,7 @@ export default function SongDetailPage() {
                   </div>
                   {song.release_date && (
                     <p className="text-[14px] opacity-60 mt-2">
-                      Released: {new Date(song.release_date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                      Released: {formatReleaseDate(song.release_date)}
                     </p>
                   )}
                 </div>
@@ -296,11 +326,7 @@ export default function SongDetailPage() {
                     {/* Release Date - Aligned to bottom */}
                     {song.release_date && (
                       <p className="text-[14px] lg:text-[16px] opacity-60 mt-auto">
-                        Released: {new Date(song.release_date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
+                        Released: {formatReleaseDate(song.release_date)}
                       </p>
                     )}
                   </div>

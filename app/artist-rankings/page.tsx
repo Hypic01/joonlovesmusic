@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "../components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
@@ -30,13 +30,56 @@ interface ArtistRanking {
 }
 
 export default function ArtistRankingsPage() {
-  const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Initialize state from URL params
+  const initialPage = parseInt(searchParams.get("page") || "1", 10);
+  const initialSort = (searchParams.get("sort") as SortOption) || "rating-desc";
+  const initialSearch = searchParams.get("q") || "";
+
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [artistRankings, setArtistRankings] = useState<ArtistRanking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<SortOption>("rating-desc");
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [sortBy, setSortBy] = useState<SortOption>(initialSort);
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+        setSortDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Update URL when state changes
+  const updateURL = (page: number, sort: SortOption, search: string) => {
+    const params = new URLSearchParams();
+    if (page > 1) params.set("page", page.toString());
+    if (sort !== "rating-desc") params.set("sort", sort);
+    if (search) params.set("q", search);
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `/artist-rankings?${queryString}` : "/artist-rankings";
+    router.replace(newUrl, { scroll: false });
+  };
+
+  // Sync state with URL params when navigating back/forward
+  useEffect(() => {
+    const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
+    const sortFromUrl = (searchParams.get("sort") as SortOption) || "rating-desc";
+    const searchFromUrl = searchParams.get("q") || "";
+
+    if (pageFromUrl !== currentPage) setCurrentPage(pageFromUrl);
+    if (sortFromUrl !== sortBy) setSortBy(sortFromUrl);
+    if (searchFromUrl !== searchQuery) setSearchQuery(searchFromUrl);
+  }, [searchParams]);
 
   useEffect(() => {
     async function fetchData() {
@@ -129,17 +172,22 @@ export default function ArtistRankingsPage() {
   const currentArtists = filteredArtists.slice(startIndex, endIndex);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    const newSearch = e.target.value;
+    setSearchQuery(newSearch);
     setCurrentPage(1);
+    updateURL(1, sortBy, newSearch);
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortBy(e.target.value as SortOption);
+  const handleSortChange = (newSort: SortOption) => {
+    setSortBy(newSort);
     setCurrentPage(1);
+    setSortDropdownOpen(false);
+    updateURL(1, newSort, searchQuery);
   };
 
   const goToPage = (page: number) => {
     setCurrentPage(page);
+    updateURL(page, sortBy, searchQuery);
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0 });
     }
@@ -189,17 +237,42 @@ export default function ArtistRankingsPage() {
             </div>
 
             {/* Sort Dropdown */}
-            <select
-              value={sortBy}
-              onChange={handleSortChange}
-              className="px-4 py-4 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red) cursor-pointer font-semibold min-w-[240px]"
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            <div ref={sortDropdownRef} className="relative">
+              <button
+                onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
+                className="flex items-center justify-between gap-3 px-4 py-4 text-[18px] border-2 border-black bg-white hover:border-(--color-brand-red) cursor-pointer font-semibold min-w-[240px]"
+              >
+                <span>{SORT_OPTIONS.find(o => o.value === sortBy)?.label}</span>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`transition-transform ${sortDropdownOpen ? "rotate-180" : ""}`}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+              {sortDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 mt-1 border-2 border-black bg-white z-50">
+                  {SORT_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => handleSortChange(option.value)}
+                      className={`w-full px-4 py-3 text-[16px] text-left hover:bg-neutral-100 cursor-pointer ${
+                        sortBy === option.value ? "bg-neutral-100 font-semibold" : ""
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
