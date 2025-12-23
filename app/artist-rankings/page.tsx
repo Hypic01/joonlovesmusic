@@ -424,16 +424,16 @@ function ArtistRankingsContent() {
               </p>
 
               {totalPages > 1 && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   <button
                     onClick={() => goToPage(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="px-3 sm:px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer text-[14px] sm:text-[16px]"
+                    className="px-2 sm:px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer text-[14px] sm:text-[16px]"
                   >
                     Prev
                   </button>
 
-                  {/* Page Numbers - hidden on mobile */}
+                  {/* Page Numbers - desktop shows all */}
                   <div className="hidden sm:flex gap-2">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                       (page) => (
@@ -452,15 +452,60 @@ function ArtistRankingsContent() {
                     )}
                   </div>
 
-                  {/* Current page indicator - mobile only */}
-                  <span className="sm:hidden text-[14px] font-semibold px-2">
-                    {currentPage} / {totalPages}
-                  </span>
+                  {/* Mobile smart pagination */}
+                  <div className="flex sm:hidden items-center gap-1">
+                    {/* First page */}
+                    {currentPage > 2 && (
+                      <>
+                        <button
+                          onClick={() => goToPage(1)}
+                          className="w-8 h-8 border-2 border-black bg-white hover:bg-neutral-100 font-semibold cursor-pointer text-[14px]"
+                        >
+                          1
+                        </button>
+                        {currentPage > 3 && (
+                          <span className="px-1 text-[14px]">...</span>
+                        )}
+                      </>
+                    )}
+
+                    {/* Pages around current */}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(page => page >= currentPage - 1 && page <= currentPage + 1)
+                      .map(page => (
+                        <button
+                          key={page}
+                          onClick={() => goToPage(page)}
+                          className={`w-8 h-8 border-2 border-black font-semibold cursor-pointer text-[14px] ${
+                            currentPage === page
+                              ? "bg-(--color-brand-red) text-white"
+                              : "bg-white hover:bg-neutral-100"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+
+                    {/* Last page */}
+                    {currentPage < totalPages - 1 && (
+                      <>
+                        {currentPage < totalPages - 2 && (
+                          <span className="px-1 text-[14px]">...</span>
+                        )}
+                        <button
+                          onClick={() => goToPage(totalPages)}
+                          className="w-8 h-8 border-2 border-black bg-white hover:bg-neutral-100 font-semibold cursor-pointer text-[14px]"
+                        >
+                          {totalPages}
+                        </button>
+                      </>
+                    )}
+                  </div>
 
                   <button
                     onClick={() => goToPage(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="px-3 sm:px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer text-[14px] sm:text-[16px]"
+                    className="px-2 sm:px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer text-[14px] sm:text-[16px]"
                   >
                     Next
                   </button>

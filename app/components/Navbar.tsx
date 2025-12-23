@@ -37,7 +37,7 @@ export default function Navbar() {
 
         {/* Hamburger button - mobile only */}
         <button
-          className="md:hidden p-2 cursor-pointer"
+          className="md:hidden py-2 cursor-pointer"
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle menu"
         >
