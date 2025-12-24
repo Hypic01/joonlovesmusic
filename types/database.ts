@@ -53,3 +53,15 @@ export interface Artist {
   created_at: string;
 }
 
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  preview: string | null;
+  song_ids: string[];
+  published: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
