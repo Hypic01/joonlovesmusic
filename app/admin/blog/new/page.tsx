@@ -30,6 +30,10 @@ export default function NewBlogPostPage() {
   const [songResults, setSongResults] = useState<Song[]>([]);
   const [selectedSongs, setSelectedSongs] = useState<Song[]>([]);
   const [searching, setSearching] = useState(false);
+  const [searchMessage, setSearchMessage] = useState<{
+    type: "success" | "error" | "info";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/check")
@@ -63,29 +67,80 @@ export default function NewBlogPostPage() {
     }));
   };
 
-  // Search songs
+  // Detect if input is a Spotify URL
+  const isSpotifyUrl = (input: string): boolean => {
+    return input.includes("open.spotify.com/track/") || input.includes("spotify.com/track/");
+  };
+
+  // Search songs (handles both text search and Spotify URLs)
   const handleSongSearch = async () => {
     if (!songSearch.trim()) return;
 
     setSearching(true);
-    try {
-      const { data, error } = await supabase
-        .from("songs")
-        .select("*")
-        .or(
-          `title.ilike.%${songSearch}%,artist.ilike.%${songSearch}%,album_name.ilike.%${songSearch}%`
-        )
-        .limit(10);
+    setSearchMessage(null);
+    setSongResults([]);
 
-      if (!error && data) {
-        // Filter out already selected songs
-        const filtered = data.filter(
-          (song) => !selectedSongs.find((s) => s.id === song.id)
-        );
-        setSongResults(filtered);
+    try {
+      if (isSpotifyUrl(songSearch)) {
+        const response = await fetch("/api/spotify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: songSearch }),
+        });
+
+        const spotifyData = await response.json();
+
+        if (!response.ok) {
+          setSearchMessage({ type: "error", text: spotifyData.error || "Failed to fetch from Spotify" });
+          setSearching(false);
+          return;
+        }
+
+        const { data: existingSongs, error: dbError } = await supabase
+          .from("songs")
+          .select("*")
+          .eq("spotify_track_id", spotifyData.spotify_track_id)
+          .limit(1);
+
+        if (dbError) {
+          setSearchMessage({ type: "error", text: "Error checking database" });
+          setSearching(false);
+          return;
+        }
+
+        if (existingSongs && existingSongs.length > 0) {
+          const song = existingSongs[0];
+          if (selectedSongs.find((s) => s.id === song.id)) {
+            setSearchMessage({ type: "info", text: `"${song.title}" is already selected` });
+          } else {
+            setSelectedSongs((prev) => [...prev, song]);
+            setSongSearch("");
+            setSearchMessage({ type: "success", text: `Added "${song.title}" by ${song.artist}` });
+          }
+        } else {
+          setSearchMessage({
+            type: "error",
+            text: `"${spotifyData.title}" by ${spotifyData.artist} is not in your database. Add it via the Music admin page first.`,
+          });
+        }
+      } else {
+        const { data, error } = await supabase
+          .from("songs")
+          .select("*")
+          .or(`title.ilike.%${songSearch}%,artist.ilike.%${songSearch}%,album_name.ilike.%${songSearch}%`)
+          .limit(10);
+
+        if (!error && data) {
+          const filtered = data.filter((song) => !selectedSongs.find((s) => s.id === song.id));
+          setSongResults(filtered);
+          if (filtered.length === 0 && data.length === 0) {
+            setSearchMessage({ type: "info", text: "No songs found. Try a different search or paste a Spotify URL." });
+          }
+        }
       }
     } catch (error) {
       console.error("Error searching songs:", error);
+      setSearchMessage({ type: "error", text: "An error occurred while searching" });
     }
     setSearching(false);
   };
@@ -294,7 +349,7 @@ export default function NewBlogPostPage() {
                     }
                   }}
                   className="flex-1 px-4 py-3 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red)"
-                  placeholder="Search songs by title, artist, or album"
+                  placeholder="Search by title/artist or paste Spotify URL"
                 />
                 <button
                   type="button"
@@ -305,6 +360,17 @@ export default function NewBlogPostPage() {
                   {searching ? "..." : "Search"}
                 </button>
               </div>
+
+              {/* Search Message */}
+              {searchMessage && (
+                <div className={`mt-2 p-3 border-2 ${
+                  searchMessage.type === "success" ? "border-green-500 bg-green-50 text-green-700" :
+                  searchMessage.type === "error" ? "border-red-500 bg-red-50 text-red-700" :
+                  "border-blue-500 bg-blue-50 text-blue-700"
+                }`}>
+                  {searchMessage.text}
+                </div>
+              )}
 
               {/* Search Results */}
               {songResults.length > 0 && (
