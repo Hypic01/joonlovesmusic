@@ -71,10 +71,13 @@ function Editor() {
 
   const searchSongs = async () => {
     if (!songSearch.trim()) return;
+    // PostgREST .or() treats commas as separators, so quote the term (and escape
+    // backslashes/quotes) to keep legitimate queries like "Tyler, the Creator" intact.
+    const q = songSearch.trim().replace(/[\\"]/g, (m) => `\\${m}`);
     const { data } = await supabase
       .from("songs")
       .select("*")
-      .or(`title.ilike.%${songSearch}%,artist.ilike.%${songSearch}%,album_name.ilike.%${songSearch}%`)
+      .or(`title.ilike."%${q}%",artist.ilike."%${q}%",album_name.ilike."%${q}%"`)
       .limit(10);
     setSongResults(data || []);
   };
