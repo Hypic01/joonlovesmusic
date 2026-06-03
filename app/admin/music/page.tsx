@@ -8,11 +8,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
+import SongLocationsEditor, { type DraftPin } from "@/app/components/SongLocationsEditor";
 
 export default function AdminMusicPage() {
   const router = useRouter();
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [locationDrafts, setLocationDrafts] = useState<DraftPin[]>([]);
   const [fetchingUrl, setFetchingUrl] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [mediaUrl, setMediaUrl] = useState("");
@@ -187,27 +189,43 @@ export default function AdminMusicPage() {
       }
 
       // If no duplicate, proceed with insert
-      const { error } = await supabase.from("songs").insert({
-        title: formData.title,
-        artist: formData.artist,
-        rating: parseInt(formData.rating),
-        comment: formData.comment || null,
-        cover_url: formData.cover_url || null,
-        spotify_track_id: formData.spotify_track_id || null,
-        youtube_video_id: formData.youtube_video_id || null,
-        album_name: formData.album_name || null,
-        release_date: formData.release_date || null,
-        duration_ms: formData.duration_ms,
-        explicit: formData.explicit,
-        popularity: formData.popularity,
-        isrc: formData.isrc || null,
-        track_number: formData.track_number,
-        disc_number: formData.disc_number,
-        album_type: formData.album_type || null,
-        preview_url: formData.preview_url || null,
-      });
+      const { data: inserted, error } = await supabase
+        .from("songs")
+        .insert({
+          title: formData.title,
+          artist: formData.artist,
+          rating: parseInt(formData.rating),
+          comment: formData.comment || null,
+          cover_url: formData.cover_url || null,
+          spotify_track_id: formData.spotify_track_id || null,
+          youtube_video_id: formData.youtube_video_id || null,
+          album_name: formData.album_name || null,
+          release_date: formData.release_date || null,
+          duration_ms: formData.duration_ms,
+          explicit: formData.explicit,
+          popularity: formData.popularity,
+          isrc: formData.isrc || null,
+          track_number: formData.track_number,
+          disc_number: formData.disc_number,
+          album_type: formData.album_type || null,
+          preview_url: formData.preview_url || null,
+        })
+        .select("id")
+        .single();
 
       if (error) throw error;
+
+      // Save any location pins attached during creation.
+      if (inserted && locationDrafts.length > 0) {
+        for (const d of locationDrafts) {
+          await fetch("/api/map-pins", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ song_id: inserted.id, ...d }),
+          });
+        }
+      }
+      setLocationDrafts([]);
 
       setMessage({ type: "success", text: "Song added successfully!" });
       setFormData({
@@ -420,6 +438,8 @@ export default function AdminMusicPage() {
                   Accepts: 2020, 2020-03, or 2020-03-15
                 </p>
               </div>
+
+            <SongLocationsEditor songId={null} onDraftChange={setLocationDrafts} />
 
               <button
                 type="submit"
