@@ -63,7 +63,10 @@ function Editor() {
   }, []);
 
   useEffect(() => {
-    loadPins();
+    async function init() {
+      await loadPins();
+    }
+    init();
   }, [loadPins]);
 
   const searchSongs = async () => {

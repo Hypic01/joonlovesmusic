@@ -33,7 +33,10 @@ function Inner({ songId, song, onDraftChange }: SongLocationsEditorProps) {
   }, [songId]);
 
   useEffect(() => {
-    loadPins();
+    async function init() {
+      await loadPins();
+    }
+    init();
   }, [loadPins]);
 
   useEffect(() => {
