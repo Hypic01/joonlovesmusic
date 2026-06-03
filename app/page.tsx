@@ -17,6 +17,9 @@ export default function HomePage() {
           <Link className="text-[32px] font-semibold hover:underline" href="/collections">
             when to listen what
           </Link>
+          <Link className="text-[32px] font-semibold hover:underline" href="/map">
+            music map
+          </Link>
           <Link className="text-[26px] font-semibold opacity-70 hover:underline" href="/criteria">
             rating criteria
           </Link>
