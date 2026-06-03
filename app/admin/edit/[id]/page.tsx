@@ -8,6 +8,7 @@ import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import type { Song, Award } from "@/types/database";
+import SongLocationsEditor from "@/app/components/SongLocationsEditor";
 
 export default function EditSongPage() {
   const params = useParams();
@@ -498,6 +499,8 @@ export default function EditSongPage() {
                 </p>
               </div>
             )}
+
+            {song && <SongLocationsEditor songId={id} song={song} />}
 
             <button
               type="submit"
