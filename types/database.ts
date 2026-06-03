@@ -65,3 +65,15 @@ export interface BlogPost {
   updated_at?: string;
 }
 
+export interface MapPin {
+  id: string;
+  song_id: string;
+  place_name: string;
+  lat: number;
+  lng: number;
+  google_place_id?: string | null;
+  country?: string | null;
+  note?: string | null;
+  created_at: string;
+}
+
