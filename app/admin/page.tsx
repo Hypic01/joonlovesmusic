@@ -72,6 +72,16 @@ export default function AdminPage() {
             </Link>
 
             <Link
+              href="/admin/map"
+              className="p-6 border-2 border-black bg-white hover:border-(--color-brand-red) cursor-pointer"
+            >
+              <h2 className="text-[24px] font-bold mb-2">Music Map</h2>
+              <p className="text-[16px] opacity-70">
+                Pin rated songs to places around the world
+              </p>
+            </Link>
+
+            <Link
               href="/admin/blog"
               className="p-6 border-2 border-black bg-white hover:border-(--color-brand-red) cursor-pointer"
             >

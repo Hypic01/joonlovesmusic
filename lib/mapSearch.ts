@@ -40,6 +40,18 @@ export function buildSearchIndex(pins: MapPinWithSong[]): SearchEntry[] {
   return Array.from(map.values());
 }
 
+/**
+ * Build the PostgREST `.or()` filter string for a live song search.
+ * PostgREST treats commas as logical separators, so we quote each ilike term
+ * and escape backslashes/quotes — this keeps legitimate queries like
+ * "Tyler, the Creator" intact instead of being split into two conditions.
+ * Pure + exported so the escaping logic can be unit tested.
+ */
+export function buildSongSearchFilter(query: string): string {
+  const q = query.trim().replace(/[\\"]/g, (m) => `\\${m}`);
+  return `title.ilike."%${q}%",artist.ilike."%${q}%",album_name.ilike."%${q}%"`;
+}
+
 /** Filter the index by query; prefix matches rank before substring matches. */
 export function matchSearch(index: SearchEntry[], query: string): SearchEntry[] {
   const q = query.trim().toLowerCase();

@@ -7,6 +7,7 @@ import { APIProvider } from "@vis.gl/react-google-maps";
 import Navbar from "../components/Navbar";
 import MusicMap from "../components/MusicMap";
 import MapSearch from "../components/MapSearch";
+import PinTree from "../components/PinTree";
 import { supabase } from "@/lib/supabase";
 import type { MapPinWithSong } from "@/lib/mapSearch";
 
@@ -41,7 +42,7 @@ export default function MapPage() {
 
   return (
     <main className="relative h-full overflow-hidden">
-      <div className="relative z-10 flex h-full flex-col">
+      <div className="relative z-10 flex h-full flex-col pb-5">
         <Navbar />
         <APIProvider apiKey={apiKey}>
           <div className="z-20 flex items-center gap-3 px-1 py-3">
@@ -62,8 +63,28 @@ export default function MapPage() {
               </button>
             )}
           </div>
-          <div className="min-h-0 flex-1 border-2 border-black">
-            <MusicMap pins={visiblePins} openPinId={openPinId} onOpenPinChange={setOpenPinId} />
+          <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto lg:grid-cols-[2fr_0.7fr] lg:overflow-hidden">
+            {/* LEFT: the map */}
+            <div className="min-h-80 border-2 border-black lg:min-h-0">
+              <MusicMap pins={visiblePins} openPinId={openPinId} onOpenPinChange={setOpenPinId} />
+            </div>
+
+            {/* RIGHT: categorized pin list — Country -> City -> Place */}
+            <div className="flex min-h-0 flex-col gap-3 lg:overflow-hidden">
+              <h2 className="text-[24px] font-bold">Pins ({pins.length})</h2>
+              {pins.length === 0 ? (
+                <p className="text-[16px] opacity-70">No pins yet</p>
+              ) : (
+                <PinTree
+                  pins={pins}
+                  activePinId={openPinId}
+                  onFocus={(p) => {
+                    setFilterIds(null);
+                    setOpenPinId(p.id);
+                  }}
+                />
+              )}
+            </div>
           </div>
         </APIProvider>
       </div>

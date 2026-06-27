@@ -73,6 +73,8 @@ export interface MapPin {
   lng: number;
   google_place_id?: string | null;
   country?: string | null;
+  city?: string | null;
+  place_category?: string | null;
   note?: string | null;
   created_at: string;
 }

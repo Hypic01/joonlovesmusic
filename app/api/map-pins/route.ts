@@ -23,11 +23,27 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { song_id, place_name, lat, lng, google_place_id, country, note } = body;
+    const { song_id, place_name, lat, lng, google_place_id, country, city, place_category, note } = body;
 
-    if (!song_id || !place_name || typeof lat !== "number" || typeof lng !== "number") {
+    if (
+      typeof song_id !== "string" ||
+      !song_id ||
+      typeof place_name !== "string" ||
+      !place_name.trim() ||
+      typeof lat !== "number" ||
+      Number.isNaN(lat) ||
+      typeof lng !== "number" ||
+      Number.isNaN(lng)
+    ) {
       return NextResponse.json(
         { error: "song_id, place_name, lat, and lng are required" },
+        { status: 400 }
+      );
+    }
+
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return NextResponse.json(
+        { error: "lat must be between -90 and 90 and lng between -180 and 180" },
         { status: 400 }
       );
     }
@@ -42,6 +58,8 @@ export async function POST(request: NextRequest) {
         lng,
         google_place_id: google_place_id || null,
         country: country || null,
+        city: city || null,
+        place_category: place_category || null,
         note: note || null,
       })
       .select()

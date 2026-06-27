@@ -10,6 +10,7 @@ export default function Navbar() {
     { href: "/musics", label: "see music ratings" },
     { href: "/artist-rankings", label: "artists power rankings" },
     { href: "/collections", label: "when to listen what" },
+    { href: "/map", label: "music map" },
   ];
 
   return (

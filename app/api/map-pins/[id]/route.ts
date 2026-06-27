@@ -26,12 +26,45 @@ export async function PATCH(
     }
     const { id } = await params;
     const body = await request.json();
+    const { song_id, place_name, lat, lng, google_place_id, country, city, place_category, note } = body;
 
-    const allowed = ["place_name", "lat", "lng", "google_place_id", "country", "note"];
-    const update: Record<string, unknown> = {};
-    for (const key of allowed) {
-      if (key in body) update[key] = body[key];
+    if (
+      typeof song_id !== "string" ||
+      !song_id ||
+      typeof place_name !== "string" ||
+      !place_name.trim()
+    ) {
+      return NextResponse.json(
+        { error: "song_id and a non-empty place_name are required" },
+        { status: 400 }
+      );
     }
+
+    if (typeof lat !== "number" || Number.isNaN(lat) || lat < -90 || lat > 90) {
+      return NextResponse.json(
+        { error: "lat must be a number between -90 and 90" },
+        { status: 400 }
+      );
+    }
+
+    if (typeof lng !== "number" || Number.isNaN(lng) || lng < -180 || lng > 180) {
+      return NextResponse.json(
+        { error: "lng must be a number between -180 and 180" },
+        { status: 400 }
+      );
+    }
+
+    const update = {
+      song_id,
+      place_name: place_name.trim(),
+      lat,
+      lng,
+      google_place_id: google_place_id ?? null,
+      country: country ?? null,
+      city: city ?? null,
+      place_category: place_category ?? null,
+      note: note ?? null,
+    };
 
     const supabase = getSupabaseAdmin();
     const { data, error } = await supabase
@@ -39,11 +72,14 @@ export async function PATCH(
       .update(update)
       .eq("id", id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error("Supabase update error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    if (!data) {
+      return NextResponse.json({ error: "Pin not found" }, { status: 404 });
     }
     return NextResponse.json({ data });
   } catch (error) {
