@@ -9,6 +9,7 @@ export default function Navbar() {
   const navLinks = [
     { href: "/musics", label: "see music ratings" },
     { href: "/artist-rankings", label: "artists power rankings" },
+    { href: "/spotify-stats", label: "joon's spotify stats" },
     { href: "/collections", label: "when to listen what" },
     { href: "/map", label: "music map" },
   ];

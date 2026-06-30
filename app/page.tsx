@@ -14,6 +14,9 @@ export default function HomePage() {
           <Link className="text-[32px] font-semibold hover:underline" href="/artist-rankings">
             artists power rankings
           </Link>
+          <Link className="text-[32px] font-semibold hover:underline" href="/spotify-stats">
+            joon&apos;s spotify stats
+          </Link>
           <Link className="text-[32px] font-semibold hover:underline" href="/collections">
             when to listen what
           </Link>
