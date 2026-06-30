@@ -5,14 +5,15 @@ export const RANGES: TimeRange[] = ["short_term", "medium_term", "long_term"];
 export const RANGE_LABELS: Record<TimeRange, string> = {
   short_term: "4 weeks",
   medium_term: "6 months",
-  long_term: "all time",
+  long_term: "past year",
 };
 
-// Spotify's buckets are approximate, and "all time" is its longest window.
+// Spotify's buckets are approximate, rolling windows. long_term is ~1 year of
+// data (Spotify's longest) — NOT lifetime, so we avoid labeling it "all time".
 const RANGE_HINTS: Record<TimeRange, string> = {
   short_term: "spotify: roughly the last 4 weeks",
   medium_term: "spotify: roughly the last 6 months",
-  long_term: "spotify: its longest window (several years of listening)",
+  long_term: "spotify: roughly the last year (its longest window — not true all-time)",
 };
 
 interface RangeToggleProps {
