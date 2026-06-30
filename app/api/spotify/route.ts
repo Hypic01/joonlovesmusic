@@ -37,12 +37,55 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const isAlbumUrl = url.includes("open.spotify.com/album/") || url.includes("spotify.com/album/");
+    const isTrackUrl = url.includes("open.spotify.com/track/") || url.includes("spotify.com/track/");
+
     // Validate Spotify URL format
-    if (!url.includes("open.spotify.com/track/")) {
+    if (!isTrackUrl && !isAlbumUrl) {
       return NextResponse.json(
-        { error: "Invalid Spotify URL. Please use a track URL (open.spotify.com/track/...)." },
+        { error: "Invalid Spotify URL. Please use a track or album URL." },
         { status: 400 }
       );
+    }
+
+    // Handle album URLs
+    if (isAlbumUrl) {
+      const albumIdMatch = url.match(/album\/([a-zA-Z0-9]+)/);
+      if (!albumIdMatch) {
+        return NextResponse.json(
+          { error: "Could not extract album ID from URL" },
+          { status: 400 }
+        );
+      }
+      const albumId = albumIdMatch[1];
+
+      const accessToken = await getSpotifyAccessToken();
+
+      const albumResponse = await fetch(`https://api.spotify.com/v1/albums/${albumId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!albumResponse.ok) {
+        return NextResponse.json(
+          { error: "Failed to fetch album from Spotify" },
+          { status: 500 }
+        );
+      }
+
+      const albumData = await albumResponse.json();
+
+      return NextResponse.json({
+        type: "album",
+        name: albumData.name || "",
+        artist: albumData.artists?.map((a: { name: string }) => a.name).join(", ") || "",
+        cover_url: albumData.images?.[0]?.url || albumData.images?.[1]?.url || "",
+        spotify_album_id: albumId,
+        release_date: albumData.release_date || null,
+        total_tracks: albumData.total_tracks || null,
+        album_type: albumData.album_type || null,
+      });
     }
 
     // Extract track ID from URL
@@ -135,6 +178,7 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.json({
+      type: "track",
       title,
       artist,
       cover_url,

@@ -53,6 +53,16 @@ export interface Artist {
   created_at: string;
 }
 
+export interface Album {
+  id: string;
+  name: string;
+  artist: string;
+  cover_url: string;
+  spotify_album_id: string;
+  release_date: string | null;
+  created_at: string;
+}
+
 export interface BlogPost {
   id: string;
   title: string;
@@ -60,6 +70,7 @@ export interface BlogPost {
   content: string;
   preview: string | null;
   song_ids: string[];
+  album_ids: string[];
   published: boolean;
   created_at: string;
   updated_at?: string;

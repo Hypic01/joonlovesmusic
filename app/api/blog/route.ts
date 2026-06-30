@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, slug, content, preview, song_ids, published } = body;
+    const { title, slug, content, preview, song_ids, album_ids, published } = body;
 
     if (!title || !slug || !content) {
       return NextResponse.json(
@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
         content,
         preview: preview || null,
         song_ids: song_ids || [],
+        album_ids: album_ids || [],
         published: published || false,
       })
       .select()

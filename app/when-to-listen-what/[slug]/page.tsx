@@ -5,9 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import SongBar from "@/app/components/SongBar";
-import AlbumCard from "@/app/components/AlbumCard";
 import { supabase } from "@/lib/supabase";
-import type { BlogPost, Song, Album } from "@/types/database";
+import type { BlogPost, Song } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +17,6 @@ export default function BlogPostPage() {
 
   const [post, setPost] = useState<BlogPost | null>(null);
   const [songs, setSongs] = useState<Song[]>([]);
-  const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -53,22 +51,6 @@ export default function BlogPostPage() {
             .map((id: string) => songsData.find((song) => song.id === id))
             .filter(Boolean) as Song[];
           setSongs(sortedSongs);
-        }
-      }
-
-      // Fetch associated albums if there are album_ids
-      if (postData.album_ids && postData.album_ids.length > 0) {
-        const { data: albumsData, error: albumsError } = await supabase
-          .from("albums")
-          .select("*")
-          .in("id", postData.album_ids);
-
-        if (!albumsError && albumsData) {
-          // Sort albums in the order they appear in album_ids
-          const sortedAlbums = postData.album_ids
-            .map((id: string) => albumsData.find((album) => album.id === id))
-            .filter(Boolean) as Album[];
-          setAlbums(sortedAlbums);
         }
       }
 
@@ -111,7 +93,7 @@ export default function BlogPostPage() {
               The blog post you&apos;re looking for doesn&apos;t exist.
             </p>
             <Link
-              href="/collections"
+              href="/when-to-listen-what"
               className="px-6 py-3 border-2 border-black bg-white hover:border-(--color-brand-red) font-semibold"
             >
               Back to Posts
@@ -130,7 +112,7 @@ export default function BlogPostPage() {
         <div className="max-w-[964px] mx-auto mb-8">
           {/* Back link */}
           <Link
-            href="/collections"
+            href="/when-to-listen-what"
             className="inline-flex items-center gap-2 text-[16px] font-semibold hover:underline mb-6"
           >
             <svg
@@ -169,20 +151,6 @@ export default function BlogPostPage() {
             ))}
           </div>
 
-          {/* Featured Albums */}
-          {albums.length > 0 && (
-            <div className="mt-12">
-              <h2 className="text-[24px] md:text-[32px] font-bold mb-4">
-                Featured Albums
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {albums.map((album, index) => (
-                  <AlbumCard key={album.id} album={album} priority={index < 4} />
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Featured Songs */}
           {songs.length > 0 && (
             <div className="mt-12">
@@ -190,8 +158,8 @@ export default function BlogPostPage() {
                 Featured Songs
               </h2>
               <div className="flex flex-col gap-3">
-                {songs.map((song, index) => (
-                  <SongBar key={song.id} song={song} rank={index + 1} showRank />
+                {songs.map((song) => (
+                  <SongBar key={song.id} song={song} />
                 ))}
               </div>
             </div>

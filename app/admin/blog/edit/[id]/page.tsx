@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
-import type { Song, BlogPost } from "@/types/database";
+import type { Song, BlogPost, Album } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +35,14 @@ export default function EditBlogPostPage() {
   const [selectedSongs, setSelectedSongs] = useState<Song[]>([]);
   const [searching, setSearching] = useState(false);
   const [searchMessage, setSearchMessage] = useState<{
+    type: "success" | "error" | "info";
+    text: string;
+  } | null>(null);
+
+  const [albumSearch, setAlbumSearch] = useState("");
+  const [selectedAlbums, setSelectedAlbums] = useState<Album[]>([]);
+  const [searchingAlbum, setSearchingAlbum] = useState(false);
+  const [albumSearchMessage, setAlbumSearchMessage] = useState<{
     type: "success" | "error" | "info";
     text: string;
   } | null>(null);
@@ -90,6 +98,24 @@ export default function EditBlogPostPage() {
             setSelectedSongs(sortedSongs);
           }
         }
+
+        // Fetch associated albums
+        if (post.album_ids && post.album_ids.length > 0) {
+          const { data: albumsData } = await supabase
+            .from("albums")
+            .select("*")
+            .in("id", post.album_ids);
+
+          if (albumsData) {
+            // Sort albums in the order they appear in album_ids
+            const sortedAlbums = post.album_ids
+              .map((albumId: string) =>
+                albumsData.find((album) => album.id === albumId)
+              )
+              .filter(Boolean) as Album[];
+            setSelectedAlbums(sortedAlbums);
+          }
+        }
       }
     } catch (error) {
       console.error("Error fetching post:", error);
@@ -97,9 +123,14 @@ export default function EditBlogPostPage() {
     setLoading(false);
   };
 
-  // Detect if input is a Spotify URL
-  const isSpotifyUrl = (input: string): boolean => {
+  // Detect if input is a Spotify track URL
+  const isSpotifyTrackUrl = (input: string): boolean => {
     return input.includes("open.spotify.com/track/") || input.includes("spotify.com/track/");
+  };
+
+  // Detect if input is a Spotify album URL
+  const isSpotifyAlbumUrl = (input: string): boolean => {
+    return input.includes("open.spotify.com/album/") || input.includes("spotify.com/album/");
   };
 
   // Search songs (handles both text search and Spotify URLs)
@@ -111,7 +142,7 @@ export default function EditBlogPostPage() {
     setSongResults([]);
 
     try {
-      if (isSpotifyUrl(songSearch)) {
+      if (isSpotifyTrackUrl(songSearch)) {
         const response = await fetch("/api/spotify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -202,6 +233,108 @@ export default function EditBlogPostPage() {
     });
   };
 
+  // Handle album search with Spotify URL
+  const handleAlbumSearch = async () => {
+    if (!albumSearch.trim()) return;
+
+    if (!isSpotifyAlbumUrl(albumSearch)) {
+      setAlbumSearchMessage({ type: "error", text: "Please paste a Spotify album URL" });
+      return;
+    }
+
+    setSearchingAlbum(true);
+    setAlbumSearchMessage(null);
+
+    try {
+      const response = await fetch("/api/spotify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: albumSearch }),
+      });
+
+      const spotifyData = await response.json();
+
+      if (!response.ok) {
+        setAlbumSearchMessage({ type: "error", text: spotifyData.error || "Failed to fetch from Spotify" });
+        setSearchingAlbum(false);
+        return;
+      }
+
+      // Check if album exists in database
+      const { data: existingAlbums, error: dbError } = await supabase
+        .from("albums")
+        .select("*")
+        .eq("spotify_album_id", spotifyData.spotify_album_id)
+        .limit(1);
+
+      if (dbError) {
+        setAlbumSearchMessage({ type: "error", text: "Error checking database" });
+        setSearchingAlbum(false);
+        return;
+      }
+
+      if (existingAlbums && existingAlbums.length > 0) {
+        const album = existingAlbums[0];
+        if (selectedAlbums.find((a) => a.id === album.id)) {
+          setAlbumSearchMessage({ type: "info", text: `"${album.name}" is already selected` });
+        } else {
+          setSelectedAlbums((prev) => [...prev, album]);
+          setAlbumSearch("");
+          setAlbumSearchMessage({ type: "success", text: `Added "${album.name}" by ${album.artist}` });
+        }
+      } else {
+        // Album doesn't exist, create it
+        const { data: newAlbum, error: insertError } = await supabase
+          .from("albums")
+          .insert({
+            name: spotifyData.name,
+            artist: spotifyData.artist,
+            cover_url: spotifyData.cover_url,
+            spotify_album_id: spotifyData.spotify_album_id,
+            release_date: spotifyData.release_date,
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          setAlbumSearchMessage({ type: "error", text: "Failed to save album to database" });
+          setSearchingAlbum(false);
+          return;
+        }
+
+        setSelectedAlbums((prev) => [...prev, newAlbum]);
+        setAlbumSearch("");
+        setAlbumSearchMessage({ type: "success", text: `Added "${newAlbum.name}" by ${newAlbum.artist}` });
+      }
+    } catch (error) {
+      console.error("Error searching albums:", error);
+      setAlbumSearchMessage({ type: "error", text: "An error occurred while searching" });
+    }
+    setSearchingAlbum(false);
+  };
+
+  const removeAlbum = (albumId: string) => {
+    setSelectedAlbums((prev) => prev.filter((a) => a.id !== albumId));
+  };
+
+  const moveAlbumUp = (index: number) => {
+    if (index === 0) return;
+    setSelectedAlbums((prev) => {
+      const newAlbums = [...prev];
+      [newAlbums[index - 1], newAlbums[index]] = [newAlbums[index], newAlbums[index - 1]];
+      return newAlbums;
+    });
+  };
+
+  const moveAlbumDown = (index: number) => {
+    if (index === selectedAlbums.length - 1) return;
+    setSelectedAlbums((prev) => {
+      const newAlbums = [...prev];
+      [newAlbums[index], newAlbums[index + 1]] = [newAlbums[index + 1], newAlbums[index]];
+      return newAlbums;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -214,6 +347,7 @@ export default function EditBlogPostPage() {
         body: JSON.stringify({
           ...formData,
           song_ids: selectedSongs.map((s) => s.id),
+          album_ids: selectedAlbums.map((a) => a.id),
         }),
       });
 
@@ -454,6 +588,95 @@ export default function EditBlogPostPage() {
                       <span className="text-[14px] font-semibold">+ Add</span>
                     </button>
                   ))}
+                </div>
+              )}
+            </div>
+
+            {/* Album Selection */}
+            <div>
+              <label className="block text-[18px] font-semibold mb-2">
+                Featured Albums
+              </label>
+
+              {/* Selected Albums */}
+              {selectedAlbums.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+                  {selectedAlbums.map((album, index) => (
+                    <div key={album.id} className="relative">
+                      {album.cover_url && (
+                        <img
+                          src={album.cover_url}
+                          alt={album.name}
+                          className="w-full aspect-square object-cover border-2 border-black"
+                        />
+                      )}
+                      <div className="mt-2">
+                        <p className="font-semibold text-[14px] truncate">{album.name}</p>
+                        <p className="text-[12px] opacity-70 truncate">{album.artist}</p>
+                      </div>
+                      <div className="absolute top-1 right-1 flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => moveAlbumUp(index)}
+                          disabled={index === 0}
+                          className="w-6 h-6 bg-white border-2 border-black hover:border-(--color-brand-red) text-[12px] font-bold cursor-pointer flex items-center justify-center disabled:opacity-30"
+                        >
+                          &larr;
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveAlbumDown(index)}
+                          disabled={index === selectedAlbums.length - 1}
+                          className="w-6 h-6 bg-white border-2 border-black hover:border-(--color-brand-red) text-[12px] font-bold cursor-pointer flex items-center justify-center disabled:opacity-30"
+                        >
+                          &rarr;
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeAlbum(album.id)}
+                          className="w-6 h-6 bg-white border-2 border-black hover:border-red-500 hover:text-red-500 text-[14px] font-bold cursor-pointer flex items-center justify-center"
+                        >
+                          x
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Album Search */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={albumSearch}
+                  onChange={(e) => setAlbumSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAlbumSearch();
+                    }
+                  }}
+                  className="flex-1 px-4 py-3 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red)"
+                  placeholder="Paste Spotify album URL"
+                />
+                <button
+                  type="button"
+                  onClick={handleAlbumSearch}
+                  disabled={searchingAlbum}
+                  className="px-6 py-3 border-2 border-black bg-white hover:border-(--color-brand-red) font-semibold cursor-pointer disabled:opacity-50"
+                >
+                  {searchingAlbum ? "..." : "Add"}
+                </button>
+              </div>
+
+              {/* Album Search Message */}
+              {albumSearchMessage && (
+                <div className={`mt-2 p-3 border-2 ${
+                  albumSearchMessage.type === "success" ? "border-green-500 bg-green-50 text-green-700" :
+                  albumSearchMessage.type === "error" ? "border-red-500 bg-red-50 text-red-700" :
+                  "border-blue-500 bg-blue-50 text-blue-700"
+                }`}>
+                  {albumSearchMessage.text}
                 </div>
               )}
             </div>
