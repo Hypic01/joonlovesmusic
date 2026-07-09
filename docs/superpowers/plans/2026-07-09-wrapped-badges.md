@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Song detail pages show per-year "Joon's Top Songs YYYY — #rank" badges for every year the song appeared in Joon's Spotify Wrapped, with metallic podium treatment for ranks 1–3.
+**Goal:** Song detail pages show per-year "Joon's Top Songs YYYY — #rank" badges for every year the song appeared in Joon's Spotify Wrapped, with metallic podium treatment for ranks 1–3 — and every Wrapped song not yet in the catalog gets an unrated song page (gray score block), hidden from the main list by default.
 
-**Architecture:** A one-time terminal script reads Joon's *own copies* of the "Your Top Songs YYYY" playlists (Spotify's API blocks the Spotify-owned originals — verified 2026-07-09) and writes ~100 rows per year into a new `wrapped_entries` Supabase table. The song page (`app/musics/[id]/page.tsx`) matches at read time by `spotify_track_id` OR `isrc` and renders `WrappedBadge` cards inside the existing Awards section. Spotify is never called during page loads.
+**Architecture:** A one-time terminal script reads Joon's *own copies* of the "Your Top Songs YYYY" playlists (Spotify's API blocks the Spotify-owned originals — verified 2026-07-09), writes ~100 rows per year into a new `wrapped_entries` Supabase table, and creates unrated `songs` rows (`rating = null`) for the ~757 Wrapped tracks missing from the catalog. The song page matches at read time by `spotify_track_id` OR `isrc` and renders `WrappedBadge` cards inside the existing Awards section. `songs.rating` becomes nullable; every rating surface renders null as a gray "–" block; `/musics` hides unrated songs behind a toggle. Spotify is never called during page loads.
 
 **Tech Stack:** Next.js 16 App Router (client page), Supabase (PostgREST via `@supabase/supabase-js` on the page; raw REST + service role in the script), vitest, Tailwind 4 + hand-rolled CSS keyframes in `app/globals.css`, Node ≥20 `.mjs` script with `--env-file`.
 
@@ -19,19 +19,28 @@
 - Every commit message ends with `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`.
 - Env vars available in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN` (already re-minted 2026-07-09 with `playlist-read-private` + `playlist-read-collaborative` scopes).
 - Supabase project id: `vvnzlxayrqqvoubvcunl`.
+- Unrated songs (`rating = null`) render as a neutral gray score block (`#D4D4D4`) showing `–`; they are EXCLUDED from artist-ranking averages and from `buildTrackRatingMap`.
 
-## Prerequisite — Joon's manual step (not a coding task)
+## Prerequisite — DONE (2026-07-09)
 
-The API cannot read Spotify-owned Wrapped playlists, but it CAN read Joon's own copies. Joon already has two copies:
+The API cannot read Spotify-owned Wrapped playlists, but it CAN read Joon's own copies. Joon has copied all ten years; ids verified via the API:
 
-| year | playlist name | playlist id | tracks |
-|------|---------------|-------------|--------|
-| 2022 | Hypic's Top Song 2022 | `1MfbMv5q0b0BdpbuK3Lzov` | 101 ⚠️ verify order |
-| 2023 | 2023년 나의 최애곡 (2) | `1z11gypRZWW5xZ9mCbHzWN` | 100 ✓ (pos 1 = "Baby again..") |
+| year | playlist id | tracks |
+|------|-------------|--------|
+| 2016 | `36jgG3FZUW7yf3gu9g6D3N` | 101 ⚠️ confirm extra track is appended at END |
+| 2017 | `0wRrpuHXkb345LUdQ9nQOh` | 100 |
+| 2018 | `6oBrWi86ZvrVfKMCb8DTxK` | 100 |
+| 2019 | `4ixj4isGjmw95Z8P0BFjDP` | 100 |
+| 2020 | `300iT0dtj4nJifheF2MSdo` | 100 |
+| 2021 | `33jZsbPDoMvvfI6fDi8LNY` | 100 |
+| 2022 | `1MfbMv5q0b0BdpbuK3Lzov` | 101 ⚠️ confirm extra track is appended at END |
+| 2023 | `3sfYOY1h05P2cEJWoidx1N` | 100 (pos 1 = "Baby again..") |
+| 2024 | `1YbzMr2yNVuuQGWuXE1mIH` | 100 |
+| 2025 | `3PE5ElFMXYRyT2otoc3PpU` | 100 |
 
-Joon copies the remaining years (2016, 2017, 2018, 2019, 2020, 2021, 2024, 2025): in the Spotify app, open "Your Top Songs YYYY" → ⋯ menu → **Add to other playlist** → **New playlist** (any name containing the year works, e.g. "Wrapped 2016"). Order is preserved. The import script has a `--list` mode (Task 5) that prints candidate playlists so the ids can be pasted into its config. Import runs per-year and is rerunnable, so missing years can be added later without blocking any coding task.
+Measured 2026-07-09: 873 unique tracks across the ten playlists; 116 already in the catalog (by track id or ISRC); **757 new unrated songs** will be created; 84 tracks appear in 2+ years.
 
-⚠️ The 2022 copy has 101 tracks. Before trusting it, confirm with Joon that the extra track is appended at the END (ranks unshifted). If it was prepended or inserted, Joon re-copies 2022 fresh.
+⚠️ For 2016 and 2022 (101 tracks each), ask Joon whether the extra track sits at the END (ranks unshifted — import as-is) or elsewhere (he re-copies the playlist and the id gets updated). Do this in Task 10 before the real import.
 
 ---
 
@@ -493,10 +502,12 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 - Create: `scripts/import-wrapped.mjs` (I/O shell)
 
 **Interfaces:**
-- Consumes: `wrapped_entries` table (Task 1). Env vars from Global Constraints.
+- Consumes: `wrapped_entries` table (Task 1); nullable `songs.rating` (Task 7 — only needed at RUN time in Task 10, not to write/test this script). Env vars from Global Constraints.
 - Produces:
   - `buildRows(year, items)` in helpers → `{ rows: Array<{year, rank, spotify_track_id, isrc, track_name, artist_name}>, warnings: string[] }`. `items` = raw Spotify playlist-track items. Rank = playlist position (index + 1); null/local tracks are skipped with a warning but do NOT shift later ranks.
-  - CLI: `node --env-file=.env.local scripts/import-wrapped.mjs --list` prints user-owned playlists (name, id, track count) to find Wrapped copies. Without `--list`, imports every year that has an id in `WRAPPED_PLAYLIST_IDS`, deleting that year's rows first (idempotent), and prints a per-year summary.
+  - `pickNewTracks(tracks, existingIds, existingIsrcs)` in helpers → array of raw track objects NOT in the catalog, deduped among themselves by track id and by ISRC (first occurrence wins).
+  - `buildSongRow(track)` in helpers → an unrated `songs` insert row (`rating: null`, full metadata).
+  - CLI: `node --env-file=.env.local scripts/import-wrapped.mjs --list` prints user-owned playlists (name, id, track count). Without `--list`, imports every year in `WRAPPED_PLAYLIST_IDS` (deleting that year's rows first — idempotent), then creates unrated `songs` rows for Wrapped tracks missing from the catalog (rerun-safe: already-created songs match by id/isrc and are skipped), and prints a summary.
 
 - [ ] **Step 1: Write the failing helper test**
 
@@ -559,7 +570,75 @@ describe("buildRows", () => {
     expect(rows[0].artist_name).toBe("One, Two");
   });
 });
+
+describe("pickNewTracks", () => {
+  const t = (id, isrc) => ({ id, name: id, artists: [], external_ids: isrc ? { isrc } : {} });
+
+  it("drops tracks already in the catalog by id or isrc", () => {
+    const picked = pickNewTracks(
+      [t("aaa", "I1"), t("bbb", "I2"), t("ccc", "I3")],
+      new Set(["aaa"]),
+      new Set(["I2"])
+    );
+    expect(picked.map((x) => x.id)).toEqual(["ccc"]);
+  });
+
+  it("dedupes new tracks against each other by id and isrc, first wins", () => {
+    const picked = pickNewTracks(
+      [t("aaa", "SAME"), t("aaa", "SAME"), t("bbb", "SAME"), t("ccc", null), t("ddd", null)],
+      new Set(),
+      new Set()
+    );
+    expect(picked.map((x) => x.id)).toEqual(["aaa", "ccc", "ddd"]);
+  });
+});
+
+describe("buildSongRow", () => {
+  it("maps a raw track to an unrated songs row", () => {
+    const row = buildSongRow({
+      id: "aaa",
+      name: "Song A",
+      artists: [{ name: "One" }, { name: "Two" }],
+      external_ids: { isrc: "ISRC1" },
+      album: {
+        name: "Album A",
+        images: [{ url: "https://img/cover.jpg" }],
+        release_date: "2019-03-15",
+        album_type: "album",
+      },
+      duration_ms: 201000,
+      explicit: true,
+      track_number: 3,
+      disc_number: 1,
+    });
+    expect(row).toEqual({
+      title: "Song A",
+      artist: "One, Two",
+      rating: null,
+      cover_url: "https://img/cover.jpg",
+      album_name: "Album A",
+      release_date: "2019-03-15",
+      album_type: "album",
+      spotify_track_id: "aaa",
+      isrc: "ISRC1",
+      duration_ms: 201000,
+      explicit: true,
+      track_number: 3,
+      disc_number: 1,
+    });
+  });
+
+  it("tolerates missing album/metadata with nulls", () => {
+    const row = buildSongRow({ id: "aaa", name: "Bare", artists: [{ name: "X" }], external_ids: {} });
+    expect(row.cover_url).toBeNull();
+    expect(row.album_name).toBeNull();
+    expect(row.isrc).toBeNull();
+    expect(row.rating).toBeNull();
+  });
+});
 ```
+
+(Update the import line to `import { buildRows, pickNewTracks, buildSongRow } from "./wrapped-helpers.mjs";`.)
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -572,7 +651,7 @@ Create `scripts/wrapped-helpers.mjs`:
 
 ```js
 // Pure logic for the Wrapped import script — kept I/O-free so vitest can
-// cover the rank-alignment rules.
+// cover the rank-alignment and dedup rules.
 
 // Raw playlist items -> wrapped_entries rows. Rank = playlist position
 // (1-based). Null/local tracks (Spotify returns track: null for removed or
@@ -597,6 +676,46 @@ export function buildRows(year, items) {
     });
   });
   return { rows, warnings };
+}
+
+// Raw tracks (all years, in order) -> the subset needing new unrated songs
+// rows: not already in the catalog by id or ISRC, deduped among themselves by
+// both identifiers (first occurrence wins, so the earliest-processed year's
+// version of a recording becomes the song page).
+export function pickNewTracks(tracks, existingIds, existingIsrcs) {
+  const picked = [];
+  const seenIds = new Set();
+  const seenIsrcs = new Set();
+  for (const track of tracks) {
+    if (!track || !track.id) continue;
+    const isrc = track.external_ids?.isrc ?? null;
+    if (existingIds.has(track.id) || (isrc && existingIsrcs.has(isrc))) continue;
+    if (seenIds.has(track.id) || (isrc && seenIsrcs.has(isrc))) continue;
+    seenIds.add(track.id);
+    if (isrc) seenIsrcs.add(isrc);
+    picked.push(track);
+  }
+  return picked;
+}
+
+// Raw track -> unrated songs insert row. Mirrors the columns the admin
+// add-song flow writes, with rating explicitly null.
+export function buildSongRow(track) {
+  return {
+    title: track.name ?? "",
+    artist: (track.artists ?? []).map((a) => a.name).join(", "),
+    rating: null,
+    cover_url: track.album?.images?.[0]?.url ?? null,
+    album_name: track.album?.name ?? null,
+    release_date: track.album?.release_date ?? null,
+    album_type: track.album?.album_type ?? null,
+    spotify_track_id: track.id,
+    isrc: track.external_ids?.isrc ?? null,
+    duration_ms: track.duration_ms ?? null,
+    explicit: track.explicit ?? null,
+    track_number: track.track_number ?? null,
+    disc_number: track.disc_number ?? null,
+  };
 }
 ```
 
@@ -623,25 +742,27 @@ Create `scripts/import-wrapped.mjs`:
 //   node --env-file=.env.local scripts/import-wrapped.mjs --list
 //     Prints your playlists (name/id/tracks) to find copies for the map below.
 //   node --env-file=.env.local scripts/import-wrapped.mjs
-//     Imports every year with an id in WRAPPED_PLAYLIST_IDS. Rerunnable:
-//     each year's rows are deleted and rewritten.
+//     Imports every year in WRAPPED_PLAYLIST_IDS (each year's wrapped_entries
+//     rows are deleted and rewritten — rerunnable), then creates unrated
+//     songs rows (rating = null) for Wrapped tracks missing from the catalog
+//     (rerun-safe: existing songs match by track id / ISRC and are skipped).
 //
 // Needs playlist-read-private scope on SPOTIFY_REFRESH_TOKEN (minted 2026-07-09).
 
-import { buildRows } from "./wrapped-helpers.mjs";
+import { buildRows, pickNewTracks, buildSongRow } from "./wrapped-helpers.mjs";
 
-// year -> playlist id of Joon's own copy (null = not copied yet, skipped).
+// year -> playlist id of Joon's own copy (ids verified via API, 2026-07-09).
 const WRAPPED_PLAYLIST_IDS = {
-  2016: null,
-  2017: null,
-  2018: null,
-  2019: null,
-  2020: null,
-  2021: null,
-  2022: "1MfbMv5q0b0BdpbuK3Lzov", // "Hypic's Top Song 2022" — ⚠️ 101 tracks; confirm order with Joon before trusting (Task 7 Step 1)
-  2023: "1z11gypRZWW5xZ9mCbHzWN", // "2023년 나의 최애곡 (2)"
-  2024: null,
-  2025: null,
+  2016: "36jgG3FZUW7yf3gu9g6D3N", // ⚠️ 101 tracks; confirm extra is at END with Joon (Task 10 Step 1)
+  2017: "0wRrpuHXkb345LUdQ9nQOh",
+  2018: "6oBrWi86ZvrVfKMCb8DTxK",
+  2019: "4ixj4isGjmw95Z8P0BFjDP",
+  2020: "300iT0dtj4nJifheF2MSdo",
+  2021: "33jZsbPDoMvvfI6fDi8LNY",
+  2022: "1MfbMv5q0b0BdpbuK3Lzov", // ⚠️ 101 tracks; confirm extra is at END with Joon (Task 10 Step 1)
+  2023: "3sfYOY1h05P2cEJWoidx1N",
+  2024: "1YbzMr2yNVuuQGWuXE1mIH",
+  2025: "3PE5ElFMXYRyT2otoc3PpU",
 };
 
 const SPOTIFY_API = "https://api.spotify.com/v1";
@@ -695,7 +816,8 @@ async function listPlaylists(token) {
 
 async function fetchPlaylistItems(token, playlistId) {
   const items = [];
-  const fields = "next,items(track(id,name,artists(name),external_ids))";
+  const fields =
+    "next,items(track(id,name,artists(name),external_ids,album(name,images,release_date,album_type),duration_ms,explicit,track_number,disc_number))";
   let url = `${SPOTIFY_API}/playlists/${playlistId}/tracks?limit=100&fields=${encodeURIComponent(fields)}`;
   while (url) {
     const page = await spotifyGet(token, url);
@@ -705,23 +827,53 @@ async function fetchPlaylistItems(token, playlistId) {
   return items;
 }
 
+const sbHeaders = {
+  apikey: serviceKey,
+  Authorization: `Bearer ${serviceKey}`,
+  "Content-Type": "application/json",
+};
+
 async function replaceYear(year, rows) {
-  const headers = {
-    apikey: serviceKey,
-    Authorization: `Bearer ${serviceKey}`,
-    "Content-Type": "application/json",
-  };
   const del = await fetch(`${supabaseUrl}/rest/v1/wrapped_entries?year=eq.${year}`, {
     method: "DELETE",
-    headers,
+    headers: sbHeaders,
   });
   if (!del.ok) throw new Error(`Delete year ${year} failed (${del.status}): ${await del.text()}`);
   const ins = await fetch(`${supabaseUrl}/rest/v1/wrapped_entries`, {
     method: "POST",
-    headers: { ...headers, Prefer: "return=minimal" },
+    headers: { ...sbHeaders, Prefer: "return=minimal" },
     body: JSON.stringify(rows),
   });
   if (!ins.ok) throw new Error(`Insert year ${year} failed (${ins.status}): ${await ins.text()}`);
+}
+
+// All catalog identifiers, paginated past PostgREST's 1000-row default.
+async function fetchExistingSongIdentifiers() {
+  const all = [];
+  const page = 1000;
+  for (let from = 0; ; from += page) {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/songs?select=spotify_track_id,isrc&limit=${page}&offset=${from}`,
+      { headers: sbHeaders }
+    );
+    if (!res.ok) throw new Error(`Fetch songs failed (${res.status}): ${await res.text()}`);
+    const rows = await res.json();
+    all.push(...rows);
+    if (rows.length < page) break;
+  }
+  return all;
+}
+
+async function insertSongs(rows) {
+  for (let i = 0; i < rows.length; i += 200) {
+    const chunk = rows.slice(i, i + 200);
+    const res = await fetch(`${supabaseUrl}/rest/v1/songs`, {
+      method: "POST",
+      headers: { ...sbHeaders, Prefer: "return=minimal" },
+      body: JSON.stringify(chunk),
+    });
+    if (!res.ok) throw new Error(`Insert songs failed (${res.status}): ${await res.text()}`);
+  }
 }
 
 const token = await getAccessToken();
@@ -737,13 +889,9 @@ if (process.argv.includes("--list")) {
 }
 
 let imported = 0;
-const missing = [];
+const allTracks = [];
 for (const [yearStr, playlistId] of Object.entries(WRAPPED_PLAYLIST_IDS)) {
   const year = Number(yearStr);
-  if (!playlistId) {
-    missing.push(year);
-    continue;
-  }
   const items = await fetchPlaylistItems(token, playlistId);
   if (items.length !== 100) {
     console.warn(`⚠️  year ${year}: playlist has ${items.length} tracks (expected 100) — importing anyway, ranks = playlist positions.`);
@@ -751,14 +899,22 @@ for (const [yearStr, playlistId] of Object.entries(WRAPPED_PLAYLIST_IDS)) {
   const { rows, warnings } = buildRows(year, items);
   for (const w of warnings) console.warn(`⚠️  ${w}`);
   await replaceYear(year, rows);
-  console.log(`✅ year ${year}: imported ${rows.length} entries.`);
+  console.log(`✅ year ${year}: imported ${rows.length} wrapped entries.`);
   imported += 1;
+  for (const it of items) {
+    if (it?.track?.id) allTracks.push(it.track);
+  }
 }
 
-if (missing.length > 0) {
-  console.log(`\nSkipped (no playlist id yet): ${missing.join(", ")}`);
-  console.log("Copy each Wrapped playlist in Spotify, run with --list to find its id, add it above, rerun.");
-}
+// Unrated song pages for Wrapped tracks missing from the catalog.
+const existing = await fetchExistingSongIdentifiers();
+const existingIds = new Set(existing.map((s) => s.spotify_track_id).filter(Boolean));
+const existingIsrcs = new Set(existing.map((s) => s.isrc).filter(Boolean));
+const newTracks = pickNewTracks(allTracks, existingIds, existingIsrcs);
+const songRows = newTracks.map(buildSongRow);
+await insertSongs(songRows);
+console.log(`✅ created ${songRows.length} unrated songs (scanned ${allTracks.length} wrapped tracks against ${existing.length} catalog songs).`);
+
 console.log(`\nDone. ${imported} year(s) imported.`);
 ```
 
@@ -896,29 +1052,275 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 ---
 
-### Task 7: Real import + sanity checks + final verification
+### Task 7: Nullable rating foundation (`ratingColors` helpers + migration)
 
 **Files:**
-- Modify: `scripts/import-wrapped.mjs` (fill `WRAPPED_PLAYLIST_IDS` for whatever years Joon has copied by now)
+- Create: Supabase migration `songs_rating_nullable` (applied remotely, not a repo file)
+- Modify: `lib/ratingColors.ts`
+- Test: `lib/ratingColors.test.ts` (new)
+
+**Interfaces:**
+- Consumes: nothing from other tasks.
+- Produces: `getRatingColor(rating: number | null | undefined): string` (null/undefined → `#D4D4D4` gray) and `displayRating(rating: number | null | undefined): string` (null/undefined → `"–"`, else the number as a string). DB column `songs.rating` accepts NULL. The `Song` TYPE is NOT changed in this task (that happens with the surface fixes in Task 8 so every task stays compile-green).
+
+- [ ] **Step 1: Apply the migration**
+
+Apply with the Supabase MCP tool (`mcp__claude_ai_Supabase__apply_migration`, project_id `vvnzlxayrqqvoubvcunl`, name `songs_rating_nullable`):
+
+```sql
+alter table public.songs alter column rating drop not null;
+```
+
+- [ ] **Step 2: Write the failing test**
+
+Create `lib/ratingColors.test.ts`:
+
+```ts
+import { describe, it, expect } from "vitest";
+import { getRatingColor, displayRating } from "@/lib/ratingColors";
+
+describe("getRatingColor", () => {
+  it("keeps the 3-color gradient for numbers", () => {
+    expect(getRatingColor(0)).toBe("#FF0000");
+    expect(getRatingColor(49)).toBe("#FF0000");
+    expect(getRatingColor(50)).toBe("#FFCC33");
+    expect(getRatingColor(69)).toBe("#FFCC33");
+    expect(getRatingColor(70)).toBe("#66CC33");
+    expect(getRatingColor(100)).toBe("#66CC33");
+  });
+
+  it("returns neutral gray for unrated", () => {
+    expect(getRatingColor(null)).toBe("#D4D4D4");
+    expect(getRatingColor(undefined)).toBe("#D4D4D4");
+  });
+});
+
+describe("displayRating", () => {
+  it("shows the number for rated songs", () => {
+    expect(displayRating(87)).toBe("87");
+    expect(displayRating(0)).toBe("0");
+  });
+
+  it("shows an en-dash for unrated songs", () => {
+    expect(displayRating(null)).toBe("–");
+    expect(displayRating(undefined)).toBe("–");
+  });
+});
+```
+
+- [ ] **Step 3: Run test to verify it fails**
+
+Run: `npx vitest run lib/ratingColors.test.ts`
+Expected: FAIL — `displayRating` is not exported / null not handled.
+
+- [ ] **Step 4: Update the implementation**
+
+In `lib/ratingColors.ts`, change the signature and add the null branch + helper:
+
+```ts
+/** Neutral gray for songs without a rating yet (unrated Wrapped imports). */
+const UNRATED_COLOR = "#D4D4D4";
+
+export function getRatingColor(rating: number | null | undefined): string {
+  if (rating == null) {
+    return UNRATED_COLOR;
+  }
+  // Clamp rating between 0 and 100
+  const clampedRating = Math.max(0, Math.min(100, rating));
+
+  // Red for unfavorable (0-49)
+  if (clampedRating < 50) {
+    return "#FF0000";
+  }
+
+  // Yellow for mixed/okay (50-69)
+  if (clampedRating < 70) {
+    return "#FFCC33";
+  }
+
+  // Green for favorable (70-100)
+  return "#66CC33";
+}
+
+/** Score-block text: the rating number, or an en-dash when unrated. */
+export function displayRating(rating: number | null | undefined): string {
+  return rating == null ? "–" : String(rating);
+}
+```
+
+(Keep the existing top-of-file doc comment.)
+
+- [ ] **Step 5: Run tests to verify they pass**
+
+Run: `npx vitest run lib/ratingColors.test.ts && npx tsc --noEmit`
+Expected: PASS; tsc clean (widening a parameter type breaks no caller).
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add lib/ratingColors.ts lib/ratingColors.test.ts
+git commit -m "feat: nullable rating groundwork — gray color + en-dash display for unrated
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 8: Null-safe rating across every surface
+
+**Files:**
+- Modify: `types/database.ts` (Song.rating), `lib/spotify.ts` + `lib/spotify.test.ts`, `app/components/SongBar.tsx`, `app/components/SongPopupCard.tsx`, `app/musics/page.tsx`, `app/musics/[id]/page.tsx`, `app/albums/[albumName]/page.tsx`, `app/artists/[artistName]/page.tsx`, `app/artist-rankings/page.tsx`, `app/admin/edit/[id]/page.tsx`, `app/api/songs/[id]/route.ts` (if it validates rating), `app/admin/music/page.tsx` (only if tsc flags it)
+
+**Interfaces:**
+- Consumes: `getRatingColor` + `displayRating` (Task 7).
+- Produces: `Song.rating: number | null`; the whole app compiles and behaves with null ratings. `buildTrackRatingMap` accepts `rating: number | null` rows and SKIPS them when null.
+
+The compiler drives this task: change the type first, then fix every error `npx tsc --noEmit` reports using these exact patterns — plus four logic changes tsc cannot see (listed in Step 3).
+
+- [ ] **Step 1: Change the type**
+
+In `types/database.ts`:
+
+```ts
+  rating: number | null;
+```
+
+(replacing `rating: number;` in `interface Song`).
+
+- [ ] **Step 2: Fix every tsc error with these patterns**
+
+Run `npx tsc --noEmit` repeatedly and apply, per error kind:
+
+1. **Rendering the number** — `{song.rating}` (or `{s.rating}` etc.) becomes `{displayRating(song.rating)}`, importing `displayRating` from `@/lib/ratingColors` next to the existing `getRatingColor` import. Known spots: `SongBar.tsx` (mobile + desktop blocks), `SongPopupCard.tsx`, `app/musics/[id]/page.tsx` (mobile + desktop rating blocks), `app/albums/[albumName]/page.tsx`, `app/artists/[artistName]/page.tsx`, `app/admin/music/page.tsx` list if present. `getRatingColor(song.rating)` calls need no change (Task 7 widened it).
+2. **Arithmetic in sorts** — `b.rating - a.rating` becomes `(b.rating ?? -1) - (a.rating ?? -1)`; `a.rating - b.rating` becomes `(a.rating ?? 101) - (b.rating ?? 101)` (unrated sinks to the bottom in BOTH directions).
+3. **String matching in search** — `song.rating.toString() === query` becomes `song.rating != null && song.rating.toString() === query`.
+4. **`buildTrackRatingMap`** in `lib/spotify.ts` — parameter type becomes `songs: { id: string; spotify_track_id: string | null; rating: number | null }[]` and the guard becomes `if (song.spotify_track_id && song.rating != null)`, so unrated songs NEVER produce a rated-chip (`TrackRating.rating` stays `number`).
+
+- [ ] **Step 3: Apply the four logic changes tsc cannot catch**
+
+1. **Postgres null ordering** — Postgres puts NULLs FIRST on `order by ... desc`, which would float 757 unrated songs to the top. Every `.order("rating", { ascending: false })` becomes `.order("rating", { ascending: false, nullsFirst: false })`. Known spots: `app/musics/page.tsx`, `app/artists/[artistName]/page.tsx`; grep for others: `grep -rn 'order("rating"' app --include="*.tsx"`.
+2. **Artist rankings must exclude unrated** — in `app/artist-rankings/page.tsx`, where songs are grouped into per-artist totals (`totalRating: existing.totalRating + song.rating` around line 133), skip unrated songs entirely: at the top of that aggregation loop add `if (song.rating == null) return;` (or `continue;` matching the loop form) so unrated songs affect neither the average nor the song count.
+3. **Admin edit can keep/clear null** — in `app/admin/edit/[id]/page.tsx`: initialize the form with `rating: data.rating?.toString() ?? ""`, save with `rating: formData.rating.trim() === "" ? null : parseInt(formData.rating)`, and remove any `required` attribute from the rating input so an unrated song can be saved unrated. If `app/api/songs/[id]/route.ts` rejects null/absent rating in its PATCH validation, relax it to allow explicit null.
+4. **Add-song form stays required** — `app/admin/music/page.tsx` keeps requiring a rating for manual adds (unrated songs enter only via the import). No change unless tsc demands a type fix.
+
+- [ ] **Step 4: Update the spotify lib test**
+
+In `lib/spotify.test.ts`, extend the `buildTrackRatingMap` coverage (add to the existing describe block, matching its style):
+
+```ts
+  it("skips songs with null rating so unrated imports never look rated", () => {
+    const map = buildTrackRatingMap([
+      { id: "s1", spotify_track_id: "t1", rating: 90 },
+      { id: "s2", spotify_track_id: "t2", rating: null },
+    ]);
+    expect(map.get("t1")).toEqual({ id: "s1", rating: 90 });
+    expect(map.has("t2")).toBe(false);
+  });
+```
+
+- [ ] **Step 5: Verify**
+
+Run: `npx tsc --noEmit && npm run lint && npm run test`
+Expected: all pass, zero remaining `rating` type errors.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add types/database.ts lib/spotify.ts lib/spotify.test.ts app
+git commit -m "feat: null-safe ratings everywhere — gray blocks, guarded sorts, excluded from rankings
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 9: `/musics` hides unrated songs behind a toggle
+
+**Files:**
+- Modify: `app/musics/page.tsx`
+
+**Interfaces:**
+- Consumes: null-safe sorts/search from Task 8.
+- Produces: `/musics` defaults to rated-only; a "Show unrated" design-system toggle (URL param `unrated=1`) reveals unrated songs; unrated rows show NO rank number and rank numbering counts rated songs only.
+
+- [ ] **Step 1: Add the state + URL sync**
+
+Following the page's existing `sortBy`/`searchQuery` pattern: `const [showUnrated, setShowUnrated] = useState(searchParams.get("unrated") === "1");` — include `unrated` in the URL-building helper (set `unrated=1` when on, delete the param when off) and in the back/forward sync effect.
+
+- [ ] **Step 2: Filter + rank**
+
+In the `filteredSongs` chain, add as the FIRST filter condition:
+
+```tsx
+      if (!showUnrated && song.rating == null) return false;
+```
+
+Replace the final rank-assigning `.map()` so unrated rows get no rank and rated ranks stay contiguous:
+
+```tsx
+    .map((song) => ({ ...song }));
+
+  let ratedRank = 0;
+  for (const song of filteredSongs) {
+    song.rank = song.rating != null ? ++ratedRank : 0;
+  }
+```
+
+and where `SongBar` receives its props, pass `showRank={song.rank > 0}` (keep the existing `rank={song.rank}`).
+
+- [ ] **Step 3: The toggle button**
+
+Next to the existing sort control, same design language (mirror the sort trigger's classes on that page):
+
+```tsx
+              <button
+                onClick={() => handleShowUnratedChange(!showUnrated)}
+                aria-pressed={showUnrated}
+                className={`px-4 py-4 text-[18px] border-2 border-black hover:border-(--color-brand-red) font-semibold cursor-pointer ${
+                  showUnrated ? "bg-neutral-100" : "bg-white"
+                }`}
+              >
+                {showUnrated ? "Hide unrated" : "Show unrated"}
+              </button>
+```
+
+with `handleShowUnratedChange` updating state + URL and resetting to page 1 (same shape as the existing sort/search handlers).
+
+- [ ] **Step 4: Verify**
+
+Run: `npx tsc --noEmit && npm run lint && npm run test`
+Expected: all pass. Manual check happens in Task 10 once real unrated songs exist.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add app/musics/page.tsx
+git commit -m "feat: /musics unrated toggle — rated-only by default
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 10: Real import + sanity checks + final verification
+
+**Files:**
+- Modify: `scripts/import-wrapped.mjs` (only if Joon re-copies a 101-track year)
 
 **Interfaces:**
 - Consumes: everything above.
-- Produces: real `wrapped_entries` rows; verified badges on real song pages.
+- Produces: real `wrapped_entries` + unrated `songs` rows; verified badges on real song pages.
 
-- [ ] **Step 1: Confirm 2022 copy order with Joon**
+- [ ] **Step 1: Confirm the two 101-track years with Joon**
 
-Ask Joon whether the 101st track in "Hypic's Top Song 2022" was added at the end (ranks intact) or the playlist should be re-copied. Update the id in `WRAPPED_PLAYLIST_IDS` if he re-copies.
+2016 (`36jgG3FZUW7yf3gu9g6D3N`) and 2022 (`1MfbMv5q0b0BdpbuK3Lzov`) have 101 tracks. Ask Joon whether each extra track sits at the END (ranks intact — import as-is) or elsewhere (he re-copies; update the id). If Joon is unavailable, import anyway (the script warns) and note the caveat in the summary — a re-copy + rerun later self-heals because import replaces the year.
 
-- [ ] **Step 2: Fill in newly copied years**
-
-Run `node --env-file=.env.local scripts/import-wrapped.mjs --list`, identify Joon's new copies (100-track playlists named per year), and set their ids in `WRAPPED_PLAYLIST_IDS`.
-
-- [ ] **Step 3: Run the import**
+- [ ] **Step 2: Run the import**
 
 Run: `node --env-file=.env.local scripts/import-wrapped.mjs`
-Expected: `✅ year YYYY: imported 100 entries.` per configured year; skipped years listed.
+Expected: `✅ year YYYY: imported 100 wrapped entries.` (101 for 2016/2022) for all ten years, then `✅ created ~757 unrated songs ...` (exact count may drift a few from the 2026-07-09 measurement).
 
-- [ ] **Step 4: Sanity-check the data**
+- [ ] **Step 3: Sanity-check the data**
 
 ```bash
 cd "/Users/joonwoopark/Library/Mobile Documents/com~apple~CloudDocs/Coding Projects/joonlovesmusic" && URL=$(grep NEXT_PUBLIC_SUPABASE_URL .env.local | cut -d= -f2) && KEY=$(grep NEXT_PUBLIC_SUPABASE_ANON_KEY .env.local | cut -d= -f2) && curl -s "$URL/rest/v1/wrapped_entries?select=year,rank,track_name,artist_name&rank=lte.3&order=year.desc,rank.asc" -H "apikey: $KEY" -H "Authorization: Bearer $KEY"
@@ -934,18 +1336,26 @@ curl -s "$URL/rest/v1/wrapped_entries?select=year,rank,track_name&order=rank.asc
 
 Cross-reference a couple against `songs.spotify_track_id`/`isrc` and open those song pages to confirm badges render with real year themes.
 
-- [ ] **Step 5: Full verification**
+Then check the unrated-songs side:
+
+```bash
+curl -s "$URL/rest/v1/songs?select=id&rating=is.null" -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Prefer: count=exact" -H "Range: 0-0" -D - -o /dev/null | grep -i content-range
+```
+
+Expected: ~757 unrated songs; total songs ~1,048. In the dev server: `/musics` still lists 291 songs by default; the "Show unrated" toggle reveals the rest (gray "–" blocks, no rank numbers); an unrated song's page shows cover/title/album/artist, gray score block, and its Wrapped badges; `/artist-rankings` averages are unchanged from before the import.
+
+- [ ] **Step 4: Full verification**
 
 Run: `npx tsc --noEmit && npm run lint && npm run test && npm run build`
 Expected: all pass.
 
-- [ ] **Step 6: Commit + Joon's browser sign-off**
+- [ ] **Step 5: Commit (if the script changed) + Joon's browser sign-off**
 
 ```bash
 git add scripts/import-wrapped.mjs
-git commit -m "chore: fill wrapped playlist ids and run import
+git commit -m "chore: update wrapped playlist ids after order verification
 
 Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 ```
 
-Joon does the final look-and-feel pass in his browser (podium shimmer speed, per-year palettes — tuned in `lib/wrappedThemes.ts` if needed). Remaining years import later by rerunning Task 7 steps 2–4 as he copies more playlists.
+(Skip the commit if Step 1 changed nothing.) Joon does the final look-and-feel pass in his browser (podium shimmer speed, per-year palettes — tuned in `lib/wrappedThemes.ts`; unrated-toggle feel). Future years (2026+) = copy the new Wrapped playlist, add its id + theme, rerun the script.

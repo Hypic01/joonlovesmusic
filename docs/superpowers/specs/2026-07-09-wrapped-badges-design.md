@@ -146,11 +146,46 @@ its badges automatically with no re-import.
 - **Future year (2026):** rerun the script; add the year's palette to
   `lib/wrappedThemes.ts` (fallback theme renders until then).
 
+## Addendum (2026-07-09, approved by Joon): unrated Wrapped songs get pages
+
+Measured across all ten copied playlists: 873 unique Wrapped tracks, 116
+already in the catalog, **757 not in it**. Joon chose: **add all 757 as
+unrated songs, hidden from the main list by default.**
+
+- `songs.rating` becomes nullable. An unrated song has `rating = null`.
+- The import script, after writing `wrapped_entries`, creates a `songs` row
+  for every Wrapped track not already in the catalog (matched by
+  `spotify_track_id` OR `isrc`, deduped across years by both identifiers):
+  full metadata (title, artist, album, cover, release date, duration, ISRC,
+  track id), `rating = null`, no comment.
+- Unrated songs render everywhere a song can appear, with the score block
+  **grayed out** (neutral gray background, "–" instead of a number): song
+  detail page, song bars, map popup cards, album/artist pages, admin list.
+  Badges/awards render normally on their pages.
+- `/musics` shows only rated songs by default; a design-system-styled toggle
+  ("Show unrated") reveals unrated ones, sorted below rated songs for the
+  rating sorts. Search guards against null ratings.
+- Artist-rankings averages and song counts EXCLUDE unrated songs.
+- `buildTrackRatingMap` (spotify-stats chips, now-playing) skips null-rating
+  songs, so "rated" chips keep meaning *rated*.
+- Admin edit allows clearing/leaving rating empty (stays null); setting a
+  rating "promotes" the song to rated.
+- Rating a previously unrated song requires no re-import; badges were already
+  live via read-time matching.
+
+Copied playlist IDs (discovered 2026-07-09; fresh "(2)" copies): 2016
+`36jgG3FZUW7yf3gu9g6D3N` (101 tracks ⚠️ verify), 2017 `0wRrpuHXkb345LUdQ9nQOh`,
+2018 `6oBrWi86ZvrVfKMCb8DTxK`, 2019 `4ixj4isGjmw95Z8P0BFjDP`, 2020
+`300iT0dtj4nJifheF2MSdo`, 2021 `33jZsbPDoMvvfI6fDi8LNY`, 2022
+`1MfbMv5q0b0BdpbuK3Lzov` (101 tracks ⚠️ verify), 2023 `3sfYOY1h05P2cEJWoidx1N`,
+2024 `1YbzMr2yNVuuQGWuXE1mIH`, 2025 `3PE5ElFMXYRyT2otoc3PpU`.
+
 ## Out of scope
 
 - Badges on the `/musics` list page or song bars (detail page only).
 - Admin UI for editing wrapped entries (the script + table are the interface).
 - Auto-extraction of theme colors from cover art.
+- A dedicated "Wrapped by year" browse page (maybe later).
 
 ## Verification
 
