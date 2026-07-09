@@ -126,11 +126,13 @@ export interface ArtistLookup {
 }
 
 export function buildTrackRatingMap(
-  songs: { id: string; spotify_track_id: string | null; rating: number }[]
+  songs: { id: string; spotify_track_id: string | null; rating: number | null }[]
 ): Map<string, TrackRating> {
   const map = new Map<string, TrackRating>();
   for (const song of songs) {
-    if (song.spotify_track_id) {
+    // Unrated (Wrapped-imported) songs are skipped so a "rated" chip always
+    // means Joon actually scored the track.
+    if (song.spotify_track_id && song.rating != null) {
       map.set(song.spotify_track_id, { id: song.id, rating: song.rating });
     }
   }

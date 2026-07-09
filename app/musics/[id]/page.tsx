@@ -6,7 +6,7 @@ import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import type { Song, Award, RatingHistory, CommentHistory, WrappedEntry } from "@/types/database";
-import { getRatingColor } from "@/lib/ratingColors";
+import { getRatingColor, displayRating } from "@/lib/ratingColors";
 import WrappedBadge from "@/app/components/WrappedBadge";
 import { buildWrappedFilter } from "@/lib/wrapped";
 
@@ -235,7 +235,7 @@ export default function SongDetailPage() {
                       className="w-20 h-20 flex items-center justify-center"
                       style={{ backgroundColor: getRatingColor(song.rating) }}
                     >
-                      <span className="text-[40px] font-black">{song.rating}</span>
+                      <span className="text-[40px] font-black">{displayRating(song.rating)}</span>
                     </div>
                     {song.updated_at && (
                       <div className="text-[12px] opacity-60 mt-1 text-center">
@@ -353,7 +353,7 @@ export default function SongDetailPage() {
                       className="w-24 h-24 lg:w-32 lg:h-32 flex items-center justify-center"
                       style={{ backgroundColor: getRatingColor(song.rating) }}
                     >
-                      <span className="text-[48px] lg:text-[64px] font-black">{song.rating}</span>
+                      <span className="text-[48px] lg:text-[64px] font-black">{displayRating(song.rating)}</span>
                     </div>
                     {/* Last Updated */}
                     {song.updated_at && (

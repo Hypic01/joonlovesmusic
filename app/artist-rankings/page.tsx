@@ -125,12 +125,15 @@ function ArtistRankingsContent() {
         const artistStats = new Map<string, { totalRating: number; count: number }>();
 
         (songsData || []).forEach((song: Song) => {
+          // Unrated (Wrapped-imported) songs affect neither averages nor counts
+          if (song.rating == null) return;
+          const rating = song.rating;
           // Split by comma and process each artist
           const artists = song.artist.split(',').map((a: string) => a.trim());
           artists.forEach((artistName: string) => {
             const existing = artistStats.get(artistName) || { totalRating: 0, count: 0 };
             artistStats.set(artistName, {
-              totalRating: existing.totalRating + song.rating,
+              totalRating: existing.totalRating + rating,
               count: existing.count + 1,
             });
           });

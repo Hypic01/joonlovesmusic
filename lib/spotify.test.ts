@@ -41,6 +41,15 @@ describe("buildTrackRatingMap", () => {
     expect(map.has("song-b")).toBe(false);
     expect(map.size).toBe(1);
   });
+
+  it("skips songs with null rating so unrated imports never look rated", () => {
+    const map = buildTrackRatingMap([
+      { id: "s1", spotify_track_id: "t1", rating: 90 },
+      { id: "s2", spotify_track_id: "t2", rating: null },
+    ]);
+    expect(map.get("t1")).toEqual({ id: "s1", rating: 90 });
+    expect(map.has("t2")).toBe(false);
+  });
 });
 
 describe("buildArtistLookup", () => {

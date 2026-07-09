@@ -97,7 +97,7 @@ function MusicsContent() {
         const { data, error } = await supabase
           .from("songs")
           .select("*")
-          .order("rating", { ascending: false });
+          .order("rating", { ascending: false, nullsFirst: false });
 
         if (error) throw error;
 
@@ -127,16 +127,17 @@ function MusicsContent() {
       const titleMatch = song.title.toLowerCase().includes(query);
       const artistMatch = song.artist.toLowerCase().includes(query);
       const albumMatch = song.album_name?.toLowerCase().includes(query) || false;
-      const ratingMatch = song.rating.toString() === query;
+      const ratingMatch = song.rating != null && song.rating.toString() === query;
 
       return titleMatch || artistMatch || albumMatch || ratingMatch;
     })
     .sort((a, b) => {
       switch (sortBy) {
         case "rating-desc":
-          return b.rating - a.rating;
+          // Unrated sinks to the bottom in both directions
+          return (b.rating ?? -1) - (a.rating ?? -1);
         case "rating-asc":
-          return a.rating - b.rating;
+          return (a.rating ?? 101) - (b.rating ?? 101);
         case "updated-desc":
           return new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime();
         case "updated-asc":

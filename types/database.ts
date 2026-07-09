@@ -2,7 +2,8 @@ export interface Song {
   id: string; // UUID from Supabase
   title: string;
   artist: string;
-  rating: number;
+  /** null = unrated (auto-imported from Wrapped, not yet scored by Joon) */
+  rating: number | null;
   rank: number;
   cover_url: string | null;
   comment: string | null;

@@ -6,7 +6,7 @@ import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import type { Song } from "@/types/database";
-import { getRatingColor } from "@/lib/ratingColors";
+import { getRatingColor, displayRating } from "@/lib/ratingColors";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -108,7 +108,7 @@ export default function AlbumPage() {
                         className="w-16 h-16 flex items-center justify-center shrink-0"
                         style={{ backgroundColor: getRatingColor(song.rating) }}
                       >
-                        <span className="text-[32px] font-black">{song.rating}</span>
+                        <span className="text-[32px] font-black">{displayRating(song.rating)}</span>
                       </div>
                     </div>
 
@@ -154,7 +154,7 @@ export default function AlbumPage() {
                       className="w-16 h-16 lg:w-24 lg:h-24 flex items-center justify-center shrink-0"
                       style={{ backgroundColor: getRatingColor(song.rating) }}
                     >
-                      <span className="text-[32px] lg:text-[40px] font-black">{song.rating}</span>
+                      <span className="text-[32px] lg:text-[40px] font-black">{displayRating(song.rating)}</span>
                     </div>
 
                     {/* Arrow - hidden on tablet, visible on desktop */}

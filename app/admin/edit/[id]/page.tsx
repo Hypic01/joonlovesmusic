@@ -227,7 +227,8 @@ export default function EditSongPage() {
       const updateData = {
         title: formData.title,
         artist: formData.artist,
-        rating: parseInt(formData.rating),
+        // Empty input keeps the song unrated; entering a number promotes it
+        rating: formData.rating.trim() === "" ? null : parseInt(formData.rating),
         comment: formData.comment || null,
         cover_url: formData.cover_url || null,
         spotify_track_id: formData.spotify_track_id || null,
@@ -403,11 +404,10 @@ export default function EditSongPage() {
 
             <div>
               <label className="block text-[20px] font-semibold mb-2">
-                Rating (0-100) *
+                Rating (0-100, empty = unrated)
               </label>
               <input
                 type="number"
-                required
                 min="0"
                 max="100"
                 value={formData.rating}

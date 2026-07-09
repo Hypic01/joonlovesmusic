@@ -6,7 +6,7 @@ import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import type { Song, Artist } from "@/types/database";
-import { getRatingColor } from "@/lib/ratingColors";
+import { getRatingColor, displayRating } from "@/lib/ratingColors";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -28,7 +28,7 @@ export default function ArtistPage() {
           { data: songsData, error: songsError },
           { data: artistData }
         ] = await Promise.all([
-          supabase.from("songs").select("*").order("rating", { ascending: false }),
+          supabase.from("songs").select("*").order("rating", { ascending: false, nullsFirst: false }),
           supabase.from("artists").select("*").eq("name", artistName).single()
         ]);
 
@@ -60,9 +60,10 @@ export default function ArtistPage() {
     fetchArtistData();
   }, [artistName]);
 
-  // Calculate average rating
-  const averageRating = songs.length > 0
-    ? Math.round(songs.reduce((sum, song) => sum + song.rating, 0) / songs.length)
+  // Calculate average rating over rated songs only (unrated are excluded)
+  const ratedSongs = songs.filter((song) => song.rating != null);
+  const averageRating = ratedSongs.length > 0
+    ? Math.round(ratedSongs.reduce((sum, song) => sum + (song.rating ?? 0), 0) / ratedSongs.length)
     : 0;
 
   return (
@@ -217,7 +218,7 @@ export default function ArtistPage() {
                         className="w-16 h-16 flex items-center justify-center shrink-0"
                         style={{ backgroundColor: getRatingColor(song.rating) }}
                       >
-                        <span className="text-[32px] font-black">{song.rating}</span>
+                        <span className="text-[32px] font-black">{displayRating(song.rating)}</span>
                       </div>
                     </div>
 
@@ -280,7 +281,7 @@ export default function ArtistPage() {
                       className="w-16 h-16 lg:w-24 lg:h-24 flex items-center justify-center shrink-0"
                       style={{ backgroundColor: getRatingColor(song.rating) }}
                     >
-                      <span className="text-[32px] lg:text-[40px] font-black">{song.rating}</span>
+                      <span className="text-[32px] lg:text-[40px] font-black">{displayRating(song.rating)}</span>
                     </div>
 
                     {/* Arrow - hidden on tablet, visible on desktop */}

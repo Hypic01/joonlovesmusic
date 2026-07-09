@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Song } from "@/types/database";
-import { getRatingColor } from "@/lib/ratingColors";
+import { getRatingColor, displayRating } from "@/lib/ratingColors";
 
 interface SongPopupCardProps {
   song: Song;
@@ -49,7 +49,7 @@ export default function SongPopupCard({ song }: SongPopupCardProps) {
         className="w-24 h-24 flex items-center justify-center shrink-0"
         style={{ backgroundColor: getRatingColor(song.rating) }}
       >
-        <span className="text-[40px] font-black">{song.rating}</span>
+        <span className="text-[40px] font-black">{displayRating(song.rating)}</span>
       </div>
     </Link>
   );
