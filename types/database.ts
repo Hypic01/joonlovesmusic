@@ -90,3 +90,14 @@ export interface MapPin {
   created_at: string;
 }
 
+export interface WrappedEntry {
+  id: string;
+  year: number;
+  rank: number;
+  spotify_track_id: string;
+  isrc: string | null;
+  track_name: string;
+  artist_name: string;
+  created_at: string;
+}
+
