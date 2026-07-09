@@ -5,8 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
-import type { Song, Award, RatingHistory, CommentHistory } from "@/types/database";
+import type { Song, Award, RatingHistory, CommentHistory, WrappedEntry } from "@/types/database";
 import { getRatingColor } from "@/lib/ratingColors";
+import WrappedBadge from "@/app/components/WrappedBadge";
+import { buildWrappedFilter } from "@/lib/wrapped";
 
 // Format release date based on precision (YYYY, YYYY-MM, or YYYY-MM-DD)
 function formatReleaseDate(dateStr: string): string {
@@ -43,6 +45,7 @@ export default function SongDetailPage() {
   const id = params.id as string;
   const [song, setSong] = useState<Song | null>(null);
   const [awards, setAwards] = useState<Award[]>([]);
+  const [wrappedEntries, setWrappedEntries] = useState<WrappedEntry[]>([]);
   const [ratingHistory, setRatingHistory] = useState<RatingHistory[]>([]);
   const [commentHistory, setCommentHistory] = useState<CommentHistory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,6 +88,19 @@ export default function SongDetailPage() {
         setAwards(awardsData || []);
         setRatingHistory(historyData || []);
         setCommentHistory(commentHistoryData || []);
+
+        // Wrapped honors depend on the song row's identifiers, so this runs
+        // after the parallel batch. Matches by track id OR ISRC (version-proof).
+        const wrappedFilter = buildWrappedFilter(songData?.spotify_track_id, songData?.isrc);
+        if (wrappedFilter) {
+          const { data: wrappedData, error: wrappedError } = await supabase
+            .from("wrapped_entries")
+            .select("*")
+            .or(wrappedFilter)
+            .order("year", { ascending: false });
+          if (wrappedError) throw wrappedError;
+          setWrappedEntries(wrappedData || []);
+        }
       } catch (error) {
         console.error("Error fetching song:", error);
       } finally {
@@ -391,11 +407,14 @@ export default function SongDetailPage() {
               )}
             </div>
 
-            {/* Awards Section */}
-            {awards.length > 0 && (
+            {/* Awards Section — Wrapped honors + manual awards */}
+            {(awards.length > 0 || wrappedEntries.length > 0) && (
               <div className="mb-12">
                 <h2 className="text-[28px] font-bold mb-6">Awards</h2>
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-wrap gap-4 items-start">
+                  {wrappedEntries.map((entry) => (
+                    <WrappedBadge key={entry.id} year={entry.year} rank={entry.rank} />
+                  ))}
                   {awards.map((award) => (
                     <div
                       key={award.id}
