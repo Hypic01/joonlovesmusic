@@ -1,8 +1,6 @@
 import Navbar from "@/app/components/Navbar";
 import NowPlayingBanner from "@/app/components/NowPlayingBanner";
-import TopTracksSection from "@/app/components/TopTracksSection";
-import TopArtistsSection from "@/app/components/TopArtistsSection";
-import RecentlyPlayedFeed from "@/app/components/RecentlyPlayedFeed";
+import StatsSectionsLayout from "@/app/components/StatsSectionsLayout";
 import { supabase } from "@/lib/supabase";
 import {
   getTopTracks,
@@ -35,7 +33,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     <main className="relative h-full overflow-hidden">
       <div className="relative z-10 h-full overflow-y-auto">
         <Navbar />
-        <div className="max-w-[964px] mx-auto">{children}</div>
+        <div className="max-w-[964px] lg:max-w-[1360px] mx-auto">{children}</div>
       </div>
     </main>
   );
@@ -122,9 +120,12 @@ export default async function SpotifyStatsPage() {
       </header>
 
       <NowPlayingBanner initial={nowPlaying} />
-      <TopTracksSection data={topTracks} />
-      <TopArtistsSection data={topArtists} />
-      <RecentlyPlayedFeed items={recentlyPlayed} nowMs={nowMs} />
+      <StatsSectionsLayout
+        topTracks={topTracks}
+        topArtists={topArtists}
+        recentlyPlayed={recentlyPlayed}
+        nowMs={nowMs}
+      />
     </Shell>
   );
 }
