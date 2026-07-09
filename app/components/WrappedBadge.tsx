@@ -40,18 +40,18 @@ export default function WrappedBadge({ year, rank }: WrappedBadgeProps) {
 
   const card = (
     <div
-      className="relative overflow-hidden px-6 py-6 text-center border-2 border-black min-w-[184px]"
+      className="relative overflow-hidden text-center border-2 border-black w-[188px] h-[188px] flex items-center justify-center px-3"
       style={{ background: theme.background }}
     >
       {theme.plate ? (
         <div
-          className="border-2 border-black px-4 py-3 m-1"
+          className="border-2 border-black px-4 py-3"
           style={{ background: theme.plate, boxShadow: theme.plateRing }}
         >
           {content}
         </div>
       ) : (
-        content
+        <div>{content}</div>
       )}
       {podium && <div className="wrapped-sweep" aria-hidden="true" />}
     </div>
