@@ -26,60 +26,77 @@ export const WRAPPED_YEARS = [
 const flat = (color: string) => `linear-gradient(${color}, ${color})`;
 
 const THEMES: Record<number, WrappedTheme> = {
-  // Red-orange field, teal zigzag band up top, white dot grid at the bottom.
+  // Red-orange field, teal zigzag band up top, white dot grid at the bottom;
+  // text plate in the brighter field red.
   2016: {
     background: [
-      "repeating-linear-gradient(45deg, #7DE0D3 0 7px, #B72E22 7px 14px) left top / 100% 12px no-repeat",
-      "radial-gradient(circle at 4px 4px, rgba(255,255,255,0.9) 1.6px, transparent 2px) left 0 bottom 16px / 11px 10px repeat-x",
-      "radial-gradient(circle at 4px 4px, rgba(255,255,255,0.9) 1.6px, transparent 2px) left 6px bottom 6px / 11px 10px repeat-x",
-      flat("#FF4B33"),
+      "repeating-linear-gradient(45deg, #7DE0D3 0 7px, #A3271C 7px 14px) left top / 100% 12px no-repeat",
+      "radial-gradient(circle at 4px 4px, rgba(255,255,255,0.9) 1.6px, transparent 2px) left 0 bottom 14px / 11px 10px repeat-x",
+      "radial-gradient(circle at 4px 4px, rgba(255,255,255,0.9) 1.6px, transparent 2px) left 6px bottom 4px / 11px 10px repeat-x",
+      flat("#E03A24"),
     ].join(", "),
-    plate: null,
+    plate: "#FF4B33",
     text: "#FFFFFF",
     shadow: "#8F1D12",
   },
-  // Deep green with the pink torn shape + red dots in the top-right corner.
+  // Deep green with pink torn shapes + red dots in opposite corners; plate in
+  // the cover's field green.
   2017: {
     background: [
-      "radial-gradient(circle at 86% 10%, #F2A0BC 0 24%, transparent 24.5%)",
-      "radial-gradient(circle at 76% 4%, #D7263D 0 6%, transparent 6.5%)",
-      "radial-gradient(circle at 96% 26%, #D7263D 0 4.5%, transparent 5%)",
-      flat("#1B7C3E"),
+      "radial-gradient(circle at 88% 8%, #F2A0BC 0 26%, transparent 26.5%)",
+      "radial-gradient(circle at 74% 3%, #D7263D 0 7%, transparent 7.5%)",
+      "radial-gradient(circle at 97% 30%, #D7263D 0 5%, transparent 5.5%)",
+      "radial-gradient(circle at 8% 92%, #F2A0BC 0 12%, transparent 12.5%)",
+      flat("#145C2E"),
     ].join(", "),
-    plate: null,
+    plate: "#1B7C3E",
     text: "#FFFFFF",
     shadow: "#0C3D1E",
   },
-  // Lavender field, everything set in big yellow type.
+  // Lavender pixel checker behind the cover's yellow: yellow plate, purple
+  // type (inverse of the yellow-on-lavender cover text, for legibility).
   2018: {
-    background: flat("#C9B1E4"),
-    plate: null,
-    text: "#FBF15C",
-    shadow: "#6A4E93",
+    background: [
+      "repeating-conic-gradient(#C9B1E4 0deg 90deg, #D9C6EE 90deg 180deg) top left / 32px 32px",
+      flat("#C9B1E4"),
+    ].join(", "),
+    plate: "#FBF15C",
+    text: "#6A4E93",
   },
-  // Hot magenta, white wordmark, lime "2019" numerals.
+  // Deep magenta with lime corner wedges + a white diagonal; bright magenta
+  // plate, white wordmark, lime numerals like the cover.
   2019: {
-    background: flat("#EB158D"),
-    plate: null,
+    background: [
+      "linear-gradient(135deg, #CDF564 0 22%, transparent 22.5%)",
+      "linear-gradient(315deg, #CDF564 0 14%, transparent 14.5%)",
+      "linear-gradient(135deg, transparent 0 24%, #FFFFFF 24% 27%, transparent 27.5%)",
+      flat("#C40E75"),
+    ].join(", "),
+    plate: "#EB158D",
     text: "#FFFFFF",
     rankText: "#CDF564",
     shadow: "#7E0A4C",
   },
-  // Mint field with magenta outline type.
+  // Deeper teal field with magenta/white bullseyes in the corners; mint plate
+  // with the cover's magenta type.
   2020: {
-    background: flat("#A5DCD9"),
-    plate: null,
+    background: [
+      "radial-gradient(circle at 100% 0%, #DD1D8E 0 12px, #FFFFFF 12px 22px, #DD1D8E 22px 32px, #FFFFFF 32px 42px, transparent 42px)",
+      "radial-gradient(circle at 0% 100%, #DD1D8E 0 10px, #FFFFFF 10px 18px, #DD1D8E 18px 26px, transparent 26px)",
+      flat("#8ECFCB"),
+    ].join(", "),
+    plate: "#A5DCD9",
     text: "#DD1D8E",
     shadow: "#FFFFFF",
   },
-  // Lime field crossed by tan ribbons, deep purple type.
+  // Deeper lime field crossed by tan ribbons; lime plate, deep purple type.
   2021: {
     background: [
-      "linear-gradient(115deg, transparent 0 58%, #D9BCA3 58% 74%, transparent 74%)",
-      "linear-gradient(115deg, transparent 0 12%, #D9BCA3 12% 22%, transparent 22%)",
-      flat("#CDF564"),
+      "linear-gradient(115deg, transparent 0 55%, #D9BCA3 55% 72%, transparent 72%)",
+      "linear-gradient(115deg, transparent 0 14%, #D9BCA3 14% 26%, transparent 26%)",
+      flat("#B8E64F"),
     ].join(", "),
-    plate: null,
+    plate: "#CDF564",
     text: "#4B2775",
   },
   // Black field, pink corner blobs, text on the green clover with its yellow
@@ -96,14 +113,15 @@ const THEMES: Record<number, WrappedTheme> = {
     plateRing: "0 0 0 4px #EFFF6B",
     text: "#0B3B1D",
   },
-  // Periwinkle with thermal heat-map blobs in opposite corners, black type.
+  // Deeper periwinkle with thermal heat-map blobs in opposite corners;
+  // periwinkle plate, black type.
   2023: {
     background: [
-      "radial-gradient(circle at 88% 8%, #FFE45C 0 7%, #FF9A3C 7% 12%, #EF5A69 12% 16%, transparent 16.5%)",
-      "radial-gradient(circle at 8% 88%, #FFE45C 0 6%, #FF9A3C 6% 10%, #EF5A69 10% 14%, transparent 14.5%)",
-      flat("#B7B1F0"),
+      "radial-gradient(circle at 90% 6%, #FFE45C 0 9%, #FF9A3C 9% 15%, #EF5A69 15% 20%, transparent 20.5%)",
+      "radial-gradient(circle at 6% 92%, #FFE45C 0 8%, #FF9A3C 8% 13%, #EF5A69 13% 18%, transparent 18.5%)",
+      flat("#A29BE8"),
     ].join(", "),
-    plate: null,
+    plate: "#B7B1F0",
     text: "#141414",
   },
   // Concentric pixel diamond: blue rings out from a yellow core, text on the
@@ -114,13 +132,16 @@ const THEMES: Record<number, WrappedTheme> = {
     plate: "#F8FF3B",
     text: "#141414",
   },
-  // Cream field, black dashed strip, blue-violet bubble numerals.
+  // Warm cream field with black dashed strips top and bottom and a violet
+  // dot; cream plate, black type, blue-violet numerals.
   2025: {
     background: [
-      "repeating-linear-gradient(90deg, #141414 0 12px, #F4F0EA 12px 24px) 0 62% / 100% 12px no-repeat",
-      flat("#F4F0EA"),
+      "repeating-linear-gradient(90deg, #141414 0 12px, #F4F0EA 12px 24px) 0 12% / 100% 10px no-repeat",
+      "repeating-linear-gradient(90deg, #141414 0 12px, #F4F0EA 12px 24px) 0 88% / 100% 10px no-repeat",
+      "radial-gradient(circle at 90% 50%, #7A6BEB 0 8%, transparent 8.5%)",
+      flat("#E8E2D8"),
     ].join(", "),
-    plate: null,
+    plate: "#F4F0EA",
     text: "#141414",
     rankText: "#7A6BEB",
     shadow: "#141414",

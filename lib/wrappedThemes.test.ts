@@ -30,11 +30,12 @@ describe("wrappedThemes", () => {
     expect(theme.text).toMatch(HEX);
   });
 
-  it("busy backgrounds provide a plate so text stays legible", () => {
-    // 2022 (black + shapes) and 2024 (diamond rings) mimic covers whose text
-    // sits on a solid center shape — the plate.
-    expect(getWrappedTheme(2022).plate).toMatch(HEX);
-    expect(getWrappedTheme(2024).plate).toMatch(HEX);
+  it("every year provides a solid plate so text stays legible", () => {
+    // Joon's call (2026-07-09): all badges use the 2022/2024 look — decorated
+    // cover background + solid center plate holding the text.
+    for (const year of WRAPPED_YEARS) {
+      expect(getWrappedTheme(year).plate).toMatch(HEX);
+    }
   });
 
   it("ranks 1-3 get medal colors with a pixel shadow", () => {
