@@ -8,7 +8,9 @@
 //             2024 diamond core). null = text sits straight on the background.
 // plateRing:  box-shadow ring around the plate (2022's yellow spike ring).
 // text:       label color. rankText: non-podium rank color (defaults to text).
-// shadow:     hard offset shadow color for text on loud backgrounds.
+// shadow:     hard offset shadow behind the LABELS (never the same color as
+//             text — that smears it). rankShadow: shadow behind the rank
+//             number only (defaults to shadow).
 
 export interface WrappedTheme {
   background: string;
@@ -17,6 +19,7 @@ export interface WrappedTheme {
   text: string;
   rankText?: string;
   shadow?: string;
+  rankShadow?: string;
 }
 
 export const WRAPPED_YEARS = [
@@ -86,8 +89,8 @@ const THEMES: Record<number, WrappedTheme> = {
       flat("#8ECFCB"),
     ].join(", "),
     plate: "#A5DCD9",
-    text: "#DD1D8E",
-    shadow: "#FFFFFF",
+    text: "#B80E70",
+    rankShadow: "#FFFFFF",
   },
   // Deeper lime field crossed by tan ribbons; lime plate, deep purple type.
   2021: {
@@ -144,7 +147,7 @@ const THEMES: Record<number, WrappedTheme> = {
     plate: "#F4F0EA",
     text: "#141414",
     rankText: "#7A6BEB",
-    shadow: "#141414",
+    rankShadow: "#141414",
   },
 };
 
@@ -173,11 +176,15 @@ export function getRankNumberStyle(
   if (medal) {
     // Hard offset shadow keeps the metallic number readable on any theme
     // background (the gold-on-gold problem).
-    return { color: medal, textShadow: `3px 3px 0 ${theme.shadow ?? "#111111"}` };
+    return {
+      color: medal,
+      textShadow: `3px 3px 0 ${theme.rankShadow ?? theme.shadow ?? "#111111"}`,
+    };
   }
   const color = theme.rankText ?? theme.text;
+  const shadow = theme.rankShadow ?? theme.shadow;
   return {
     color,
-    textShadow: theme.shadow ? `3px 3px 0 ${theme.shadow}` : undefined,
+    textShadow: shadow ? `3px 3px 0 ${shadow}` : undefined,
   };
 }

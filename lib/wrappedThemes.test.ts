@@ -21,7 +21,17 @@ describe("wrappedThemes", () => {
       if (theme.plate !== null) expect(theme.plate).toMatch(HEX);
       if (theme.rankText) expect(theme.rankText).toMatch(HEX);
       if (theme.shadow) expect(theme.shadow).toMatch(HEX);
+      if (theme.rankShadow) expect(theme.rankShadow).toMatch(HEX);
+      // A label shadow the same color as the text smears it into unreadability
+      // (the 2025 bug) — never allow it.
+      if (theme.shadow) expect(theme.shadow.toLowerCase()).not.toBe(theme.text.toLowerCase());
     }
+  });
+
+  it("2025 keeps its label clean but gives the violet rank a black edge", () => {
+    const t2025 = getWrappedTheme(2025);
+    expect(t2025.shadow).toBeUndefined();
+    expect(getRankNumberStyle(58, t2025).textShadow).toContain("#141414");
   });
 
   it("unknown year falls back to a complete theme", () => {
