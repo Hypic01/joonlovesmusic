@@ -47,12 +47,14 @@ function MusicsContent() {
   const initialPage = parseInt(searchParams.get("page") || "1", 10);
   const initialSort = (searchParams.get("sort") as SortOption) || "rating-desc";
   const initialSearch = searchParams.get("q") || "";
+  const initialUnrated = searchParams.get("unrated") === "1";
 
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [allSongs, setAllSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [sortBy, setSortBy] = useState<SortOption>(initialSort);
+  const [showUnrated, setShowUnrated] = useState(initialUnrated);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const sortDropdownRef = useRef<HTMLDivElement>(null);
@@ -69,11 +71,12 @@ function MusicsContent() {
   }, []);
 
   // Update URL when state changes
-  const updateURL = (page: number, sort: SortOption, search: string) => {
+  const updateURL = (page: number, sort: SortOption, search: string, unrated: boolean) => {
     const params = new URLSearchParams();
     if (page > 1) params.set("page", page.toString());
     if (sort !== "rating-desc") params.set("sort", sort);
     if (search) params.set("q", search);
+    if (unrated) params.set("unrated", "1");
 
     const queryString = params.toString();
     const newUrl = queryString ? `/musics?${queryString}` : "/musics";
@@ -85,10 +88,12 @@ function MusicsContent() {
     const pageFromUrl = parseInt(searchParams.get("page") || "1", 10);
     const sortFromUrl = (searchParams.get("sort") as SortOption) || "rating-desc";
     const searchFromUrl = searchParams.get("q") || "";
+    const unratedFromUrl = searchParams.get("unrated") === "1";
 
     if (pageFromUrl !== currentPage) setCurrentPage(pageFromUrl);
     if (sortFromUrl !== sortBy) setSortBy(sortFromUrl);
     if (searchFromUrl !== searchQuery) setSearchQuery(searchFromUrl);
+    if (unratedFromUrl !== showUnrated) setShowUnrated(unratedFromUrl);
   }, [searchParams]);
 
   useEffect(() => {
@@ -121,6 +126,8 @@ function MusicsContent() {
   // Filter and sort songs
   const filteredSongs = allSongs
     .filter((song) => {
+      // Unrated (Wrapped-imported) songs are hidden unless toggled on
+      if (!showUnrated && song.rating == null) return false;
       if (!searchQuery.trim()) return true;
 
       const query = searchQuery.toLowerCase().trim();
@@ -146,10 +153,13 @@ function MusicsContent() {
           return 0;
       }
     })
-    .map((song, index) => ({
-      ...song,
-      rank: index + 1,
-    }));
+    .map((song) => ({ ...song }));
+
+  // Rank numbers count rated songs only; unrated rows show no rank (rank 0)
+  let ratedRank = 0;
+  for (const song of filteredSongs) {
+    song.rank = song.rating != null ? ++ratedRank : 0;
+  }
 
   const totalPages = Math.ceil(filteredSongs.length / SONGS_PER_PAGE);
   const startIndex = (currentPage - 1) * SONGS_PER_PAGE;
@@ -161,7 +171,7 @@ function MusicsContent() {
     const newSearch = e.target.value;
     setSearchQuery(newSearch);
     setCurrentPage(1);
-    updateURL(1, sortBy, newSearch);
+    updateURL(1, sortBy, newSearch, showUnrated);
   };
 
   // Handle sort change
@@ -169,12 +179,19 @@ function MusicsContent() {
     setSortBy(newSort);
     setCurrentPage(1);
     setSortDropdownOpen(false);
-    updateURL(1, newSort, searchQuery);
+    updateURL(1, newSort, searchQuery, showUnrated);
+  };
+
+  // Handle show-unrated toggle
+  const handleShowUnratedChange = (next: boolean) => {
+    setShowUnrated(next);
+    setCurrentPage(1);
+    updateURL(1, sortBy, searchQuery, next);
   };
 
   const goToPage = (page: number) => {
     setCurrentPage(page);
-    updateURL(page, sortBy, searchQuery);
+    updateURL(page, sortBy, searchQuery, showUnrated);
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0 });
     }
@@ -253,6 +270,17 @@ function MusicsContent() {
                   </div>
                 )}
               </div>
+
+              {/* Show-unrated toggle */}
+              <button
+                onClick={() => handleShowUnratedChange(!showUnrated)}
+                aria-pressed={showUnrated}
+                className={`px-4 py-4 text-[18px] border-2 border-black hover:border-(--color-brand-red) font-semibold cursor-pointer ${
+                  showUnrated ? "bg-neutral-100" : "bg-white"
+                }`}
+              >
+                {showUnrated ? "Hide unrated" : "Show unrated"}
+              </button>
             </div>
           </div>
 
@@ -278,9 +306,9 @@ function MusicsContent() {
                   key={song.id}
                   song={song}
                   rank={song.rank}
-                  showRank={true}
+                  showRank={song.rank > 0}
                   showArrow={true}
-                  priority={song.rank <= 10}
+                  priority={song.rank > 0 && song.rank <= 10}
                 />
               ))
             )}
