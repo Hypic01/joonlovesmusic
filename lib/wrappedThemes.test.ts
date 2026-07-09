@@ -12,34 +12,46 @@ describe("wrappedThemes", () => {
     expect(WRAPPED_YEARS).toEqual([2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]);
   });
 
-  it("every year has 3 valid hex colors and a valid text color", () => {
+  it("every year has a layered background, valid text color, and sane plate", () => {
     for (const year of WRAPPED_YEARS) {
       const theme = getWrappedTheme(year);
-      expect(theme.colors).toHaveLength(3);
-      for (const c of theme.colors) expect(c).toMatch(HEX);
+      // background is a non-empty CSS image list (gradients only, hard-edged)
+      expect(theme.background).toMatch(/gradient\(/);
       expect(theme.text).toMatch(HEX);
-      // text must differ from the background it sits on
-      expect(theme.text.toLowerCase()).not.toBe(theme.colors[0].toLowerCase());
+      if (theme.plate !== null) expect(theme.plate).toMatch(HEX);
+      if (theme.rankText) expect(theme.rankText).toMatch(HEX);
+      if (theme.shadow) expect(theme.shadow).toMatch(HEX);
     }
   });
 
   it("unknown year falls back to a complete theme", () => {
     const theme = getWrappedTheme(2099);
-    expect(theme.colors).toHaveLength(3);
+    expect(theme.background).toMatch(/gradient\(/);
     expect(theme.text).toMatch(HEX);
   });
 
-  it("ranks 1-3 get medal colors with a pixel shadow, others get theme text", () => {
+  it("busy backgrounds provide a plate so text stays legible", () => {
+    // 2022 (black + shapes) and 2024 (diamond rings) mimic covers whose text
+    // sits on a solid center shape — the plate.
+    expect(getWrappedTheme(2022).plate).toMatch(HEX);
+    expect(getWrappedTheme(2024).plate).toMatch(HEX);
+  });
+
+  it("ranks 1-3 get medal colors with a pixel shadow", () => {
     const theme = getWrappedTheme(2024);
     const gold = getRankNumberStyle(1, theme);
     const silver = getRankNumberStyle(2, theme);
     const bronze = getRankNumberStyle(3, theme);
-    const plain = getRankNumberStyle(14, theme);
     expect(gold.color).toBe("#FFD700");
     expect(silver.color).toBe("#E8ECF1");
     expect(bronze.color).toBe("#CD7F32");
     for (const s of [gold, silver, bronze]) expect(s.textShadow).toBeTruthy();
-    expect(plain.color).toBe(theme.text);
-    expect(plain.textShadow).toBeUndefined();
+  });
+
+  it("non-podium ranks use the theme rank color (cover-faithful accents)", () => {
+    const t2019 = getWrappedTheme(2019);
+    expect(getRankNumberStyle(14, t2019).color).toBe("#CDF564"); // lime "2019" numerals
+    const t2018 = getWrappedTheme(2018);
+    expect(getRankNumberStyle(14, t2018).color).toBe(t2018.text); // falls back to text
   });
 });
