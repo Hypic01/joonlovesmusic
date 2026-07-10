@@ -4,15 +4,22 @@ import { useEffect, useState, useCallback } from "react";
 import { APIProvider, useMapsLibrary } from "@vis.gl/react-google-maps";
 import MusicMap from "./MusicMap";
 import PlaceAutocomplete, { type PlaceResult } from "./PlaceAutocomplete";
+import MemoryPhotoInput, { type PhotoDraft } from "./MemoryPhotoInput";
 import { extractCountry, extractCity, type AddressComponent } from "@/lib/placeComponents";
 import { derivePlaceCategory } from "@/lib/placeCategory";
 import { supabase } from "@/lib/supabase";
+import { uploadMemoryPhoto } from "@/lib/memoryUpload";
+import { formatMoment } from "@/lib/formatMoment";
+import type { PhotoMeta } from "@/lib/photoExif";
 import type { MapPinWithSong } from "@/lib/mapSearch";
 import type { MapPin, Song } from "@/types/database";
 
 const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
-export type DraftPin = Omit<MapPin, "id" | "song_id" | "created_at">;
+export type DraftPin = Omit<MapPin, "id" | "song_id" | "created_at"> & {
+  /** Staged photo file for drafts on the add-song page; uploaded at song save. */
+  photoFile?: File | null;
+};
 
 interface SongLocationsEditorProps {
   songId: string | null;
@@ -26,6 +33,8 @@ function Inner({ songId, song, onDraftChange }: SongLocationsEditorProps) {
   const [drafts, setDrafts] = useState<DraftPin[]>([]);
   const [pending, setPending] = useState<PlaceResult | null>(null);
   const [note, setNote] = useState("");
+  const [photo, setPhoto] = useState<PhotoDraft | null>(null);
+  const [takenAt, setTakenAt] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const geocodingLib = useMapsLibrary("geocoding");
@@ -83,30 +92,78 @@ function Inner({ songId, song, onDraftChange }: SongLocationsEditorProps) {
     [geocodingLib]
   );
 
+  const handlePhotoPick = async (draft: PhotoDraft, meta: PhotoMeta) => {
+    setPhoto((prev) => {
+      if (prev) URL.revokeObjectURL(prev.previewUrl);
+      return draft;
+    });
+    if (meta.takenAt) setTakenAt(meta.takenAt);
+    if (meta.lat != null && meta.lng != null) {
+      const lat = meta.lat;
+      const lng = meta.lng;
+      // Same flow as a map click: instant raw-coordinate pending, then refine.
+      setPending({
+        place_name: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+        lat,
+        lng,
+        google_place_id: null,
+        country: null,
+        city: null,
+        place_category: null,
+      });
+      const refined = await reverseGeocode(lat, lng);
+      setPending((p) => (p && p.lat === lat && p.lng === lng ? refined : p));
+    }
+  };
+
+  const clearPhoto = () => {
+    setPhoto((prev) => {
+      if (prev) URL.revokeObjectURL(prev.previewUrl);
+      return null;
+    });
+  };
+
   const addPending = async () => {
     if (!pending || saving) return;
-    const payload: DraftPin = { ...pending, note: note || null };
+    const payload: DraftPin = { ...pending, note: note || null, taken_at: takenAt || null };
     if (songId) {
       setSaving(true);
-      const res = await fetch("/api/map-pins", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ song_id: songId, ...payload }),
-      });
-      setSaving(false);
-      if (!res.ok) {
-        const { error } = await res.json().catch(() => ({ error: null }));
-        setMessage({ type: "error", text: error || "Failed to add location" });
-        return;
+      try {
+        let photoUrls: { photo_url?: string; photo_thumb_url?: string } = {};
+        if (photo) {
+          try {
+            photoUrls = await uploadMemoryPhoto(photo.file);
+          } catch (e) {
+            setMessage({
+              type: "error",
+              text: e instanceof Error ? e.message : "Photo upload failed — try again",
+            });
+            return; // atomic: no pin without its photo
+          }
+        }
+        const res = await fetch("/api/map-pins", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ song_id: songId, ...payload, ...photoUrls }),
+        });
+        if (!res.ok) {
+          const { error } = await res.json().catch(() => ({ error: null }));
+          setMessage({ type: "error", text: error || "Failed to add location" });
+          return;
+        }
+        setMessage({ type: "success", text: `Added ${payload.place_name}` });
+        await loadPins();
+      } finally {
+        setSaving(false);
       }
-      setMessage({ type: "success", text: `Added ${payload.place_name}` });
-      await loadPins();
     } else {
-      setDrafts((prev) => [...prev, payload]);
+      setDrafts((prev) => [...prev, { ...payload, photoFile: photo?.file ?? null }]);
       setMessage({ type: "success", text: `Added ${payload.place_name}` });
     }
     setPending(null);
     setNote("");
+    clearPhoto();
+    setTakenAt("");
   };
 
   const removePersisted = async (id: string, placeName: string) => {
@@ -163,6 +220,15 @@ function Inner({ songId, song, onDraftChange }: SongLocationsEditorProps) {
         placeholder="Optional note…"
         className="w-full border-2 border-black px-3 py-2"
       />
+      <MemoryPhotoInput
+        photo={photo}
+        takenAt={takenAt}
+        onTakenAtChange={setTakenAt}
+        onPick={handlePhotoPick}
+        onClear={clearPhoto}
+        disabled={saving}
+        idPrefix="song-location"
+      />
       <p className="text-sm opacity-70">
         Pending: {pending ? pending.place_name : "— search or click the mini-map —"}
       </p>
@@ -210,20 +276,32 @@ function Inner({ songId, song, onDraftChange }: SongLocationsEditorProps) {
         <ul className="space-y-1">
           {songId
             ? pins.map((p) => (
-                <li key={p.id} className="flex justify-between border-2 border-black px-3 py-1">
-                  <span>{p.place_name}</span>
-                  <button type="button" onClick={() => removePersisted(p.id, p.place_name)} className="text-(--color-brand-red)">
+                <li key={p.id} className="flex items-center justify-between gap-2 border-2 border-black px-3 py-1">
+                  <span className="min-w-0 truncate">
+                    {p.place_name}
+                    {p.photo_thumb_url && <span className="opacity-70"> · photo</span>}
+                    {formatMoment(p.taken_at) && (
+                      <span className="opacity-70"> · {formatMoment(p.taken_at)}</span>
+                    )}
+                  </span>
+                  <button type="button" onClick={() => removePersisted(p.id, p.place_name)} className="text-(--color-brand-red) shrink-0">
                     Remove
                   </button>
                 </li>
               ))
             : drafts.map((d, i) => (
-                <li key={i} className="flex justify-between border-2 border-black px-3 py-1">
-                  <span>{d.place_name}</span>
+                <li key={i} className="flex items-center justify-between gap-2 border-2 border-black px-3 py-1">
+                  <span className="min-w-0 truncate">
+                    {d.place_name}
+                    {d.photoFile && <span className="opacity-70"> · photo</span>}
+                    {formatMoment(d.taken_at) && (
+                      <span className="opacity-70"> · {formatMoment(d.taken_at)}</span>
+                    )}
+                  </span>
                   <button
                     type="button"
                     onClick={() => setDrafts((prev) => prev.filter((_, j) => j !== i))}
-                    className="text-(--color-brand-red)"
+                    className="text-(--color-brand-red) shrink-0"
                   >
                     Remove
                   </button>

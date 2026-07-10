@@ -9,6 +9,7 @@ import Link from "next/link";
 import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import SongLocationsEditor, { type DraftPin } from "@/app/components/SongLocationsEditor";
+import { uploadMemoryPhoto } from "@/lib/memoryUpload";
 
 export default function AdminMusicPage() {
   const router = useRouter();
@@ -215,13 +216,30 @@ export default function AdminMusicPage() {
 
       if (error) throw error;
 
-      // Save any location pins attached during creation.
+      // Save any location pins attached during creation. A pin whose photo
+      // fails to upload is skipped entirely (nothing half-written) — the song
+      // itself is already saved; re-add that location from the edit page.
       if (inserted && locationDrafts.length > 0) {
         for (const d of locationDrafts) {
+          const { photoFile, ...pinFields } = d;
+          let photoUrls: { photo_url?: string; photo_thumb_url?: string } = {};
+          if (photoFile) {
+            try {
+              photoUrls = await uploadMemoryPhoto(photoFile);
+            } catch (e) {
+              setMessage({
+                type: "error",
+                text: `Song saved, but the photo for ${d.place_name} failed to upload (${
+                  e instanceof Error ? e.message : "upload error"
+                }). Re-add that location from the edit page.`,
+              });
+              continue;
+            }
+          }
           await fetch("/api/map-pins", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ song_id: inserted.id, ...d }),
+            body: JSON.stringify({ song_id: inserted.id, ...pinFields, ...photoUrls }),
           });
         }
       }
