@@ -84,7 +84,7 @@ export async function PATCH(
       note: note ?? null,
       photo_url: photo_url ?? null,
       photo_thumb_url: photo_thumb_url ?? null,
-      taken_at: taken_at ?? null,
+      taken_at: taken_at || null,
     };
 
     const supabase = getSupabaseAdmin();

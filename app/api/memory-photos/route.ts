@@ -51,7 +51,8 @@ export async function POST(request: NextRequest) {
     if (thumbErr) {
       console.error("Storage upload error (thumb):", thumbErr);
       // Don't leave a half-uploaded pair behind.
-      await supabase.storage.from("memories").remove([mainPath]);
+      const { error: rmErr } = await supabase.storage.from("memories").remove([mainPath]);
+      if (rmErr) console.error("Storage cleanup error (compensation):", rmErr);
       return NextResponse.json({ error: "Photo upload failed — try again" }, { status: 500 });
     }
 

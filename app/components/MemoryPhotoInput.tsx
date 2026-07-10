@@ -137,6 +137,7 @@ export default function MemoryPhotoInput({
         type="file"
         accept="image/jpeg,image/png,image/heic,image/heif"
         className="hidden"
+        disabled={disabled || reading}
         onChange={(e) => handleFile(e.target.files?.[0])}
         aria-label="Choose a memory photo"
       />
