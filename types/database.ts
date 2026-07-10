@@ -88,6 +88,12 @@ export interface MapPin {
   city?: string | null;
   place_category?: string | null;
   note?: string | null;
+  /** Public URL of the memory photo (Supabase Storage `memories` bucket). */
+  photo_url?: string | null;
+  /** Small square rendition used as the map marker chip. */
+  photo_thumb_url?: string | null;
+  /** The moment as local wall-clock time, `YYYY-MM-DDTHH:mm[:ss]` — never timezone-converted. */
+  taken_at?: string | null;
   created_at: string;
 }
 
