@@ -16,7 +16,12 @@ export async function uploadMemoryPhoto(file: File): Promise<MemoryPhotoUrls> {
   const form = new FormData();
   form.append("main", main, "main.jpg");
   form.append("thumb", thumb, "thumb.jpg");
-  const res = await fetch("/api/memory-photos", { method: "POST", body: form });
+  let res: Response;
+  try {
+    res = await fetch("/api/memory-photos", { method: "POST", body: form });
+  } catch {
+    throw new Error("Photo upload failed — check your connection and try again");
+  }
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.error || "Photo upload failed — try again");
   return json as MemoryPhotoUrls;
