@@ -9,6 +9,9 @@ import Navbar from "@/app/components/Navbar";
 import MusicMap from "@/app/components/MusicMap";
 import PlaceAutocomplete, { type PlaceResult } from "@/app/components/PlaceAutocomplete";
 import PinTree from "@/app/components/PinTree";
+import MemoryPhotoInput, { type PhotoDraft } from "@/app/components/MemoryPhotoInput";
+import { uploadMemoryPhoto } from "@/lib/memoryUpload";
+import type { PhotoMeta } from "@/lib/photoExif";
 import { supabase } from "@/lib/supabase";
 import { extractCountry, extractCity, type AddressComponent } from "@/lib/placeComponents";
 import { derivePlaceCategory } from "@/lib/placeCategory";
@@ -59,6 +62,10 @@ function Editor() {
   const [pinsLoaded, setPinsLoaded] = useState(false);
   const [draft, setDraft] = useState<PlaceResult | null>(null);
   const [note, setNote] = useState("");
+  const [photo, setPhoto] = useState<PhotoDraft | null>(null);
+  const [takenAt, setTakenAt] = useState("");
+  const [existingPhoto, setExistingPhoto] = useState<{ url: string | null; thumb: string | null }>({ url: null, thumb: null });
+  const [removeExistingPhoto, setRemoveExistingPhoto] = useState(false);
   const [songSearch, setSongSearch] = useState("");
   const [songResults, setSongResults] = useState<Song[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -124,6 +131,9 @@ function Editor() {
             city: geo.city,
             place_category: geo.place_category,
             note: p.note ?? null,
+            photo_url: p.photo_url ?? null,
+            photo_thumb_url: p.photo_thumb_url ?? null,
+            taken_at: p.taken_at ?? null,
           }),
         });
       }
@@ -199,6 +209,39 @@ function Editor() {
     }
   };
 
+  const handlePhotoPick = async (draft: PhotoDraft, meta: PhotoMeta) => {
+    setPhoto((prev) => {
+      if (prev) URL.revokeObjectURL(prev.previewUrl);
+      return draft;
+    });
+    setRemoveExistingPhoto(false);
+    if (meta.takenAt) setTakenAt(meta.takenAt);
+    if (meta.lat != null && meta.lng != null) {
+      const lat = meta.lat;
+      const lng = meta.lng;
+      setDraft({
+        place_name: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+        lat,
+        lng,
+        google_place_id: null,
+        country: null,
+        city: null,
+        place_category: null,
+      });
+      const refined = await reverseGeocode(lat, lng);
+      setDraft((d) => (d && d.lat === lat && d.lng === lng ? refined : d));
+    }
+  };
+
+  const handlePhotoClear = () => {
+    if (photo) {
+      URL.revokeObjectURL(photo.previewUrl);
+      setPhoto(null);
+      return; // un-stage the new file; a saved photo (if any) stays
+    }
+    setRemoveExistingPhoto(true); // no staged file: mark the saved photo for removal
+  };
+
   const resetForm = () => {
     setDraft(null);
     setSelectedSong(null);
@@ -206,6 +249,13 @@ function Editor() {
     setSongResults([]);
     setSongSearch("");
     setEditingId(null);
+    setPhoto((prev) => {
+      if (prev) URL.revokeObjectURL(prev.previewUrl);
+      return null;
+    });
+    setTakenAt("");
+    setExistingPhoto({ url: null, thumb: null });
+    setRemoveExistingPhoto(false);
   };
 
   const savePin = async () => {
@@ -213,6 +263,25 @@ function Editor() {
     if (!draft || !selectedSong) {
       setMessage({ type: "error", text: "Pick a place and a song first." });
       return;
+    }
+    setSaving(true);
+    let photoFields: { photo_url: string | null; photo_thumb_url: string | null };
+    if (photo) {
+      try {
+        const up = await uploadMemoryPhoto(photo.file);
+        photoFields = { photo_url: up.photo_url, photo_thumb_url: up.photo_thumb_url };
+      } catch (e) {
+        setMessage({
+          type: "error",
+          text: e instanceof Error ? e.message : "Photo upload failed — try again",
+        });
+        setSaving(false);
+        return; // atomic: don't save the pin without its photo
+      }
+    } else if (editingId && !removeExistingPhoto) {
+      photoFields = { photo_url: existingPhoto.url, photo_thumb_url: existingPhoto.thumb };
+    } else {
+      photoFields = { photo_url: null, photo_thumb_url: null };
     }
     const payload = {
       song_id: selectedSong.id,
@@ -224,8 +293,9 @@ function Editor() {
       city: draft.city,
       place_category: draft.place_category,
       note: note || null,
+      taken_at: takenAt || null,
+      ...photoFields,
     };
-    setSaving(true);
     try {
       const res = await fetch(
         editingId ? `/api/map-pins/${editingId}` : "/api/map-pins",
@@ -266,6 +336,13 @@ function Editor() {
     });
     setSelectedSong(pin.songs);
     setNote(pin.note ?? "");
+    setPhoto((prev) => {
+      if (prev) URL.revokeObjectURL(prev.previewUrl);
+      return null;
+    });
+    setTakenAt(pin.taken_at ? pin.taken_at.slice(0, 16) : "");
+    setExistingPhoto({ url: pin.photo_url ?? null, thumb: pin.photo_thumb_url ?? null });
+    setRemoveExistingPhoto(false);
     setSongResults([]);
     setSongSearch("");
     setMessage(null);
@@ -420,6 +497,17 @@ function Editor() {
             onChange={(e) => setNote(e.target.value)}
             placeholder="Optional note (why this place)…"
             className="w-full px-6 py-4 text-[18px] border-2 border-black bg-white focus:outline-none focus:border-(--color-brand-red)"
+          />
+
+          <MemoryPhotoInput
+            photo={photo}
+            existingPhotoUrl={removeExistingPhoto ? null : existingPhoto.thumb ?? existingPhoto.url}
+            takenAt={takenAt}
+            onTakenAtChange={setTakenAt}
+            onPick={handlePhotoPick}
+            onClear={handlePhotoClear}
+            disabled={saving}
+            idPrefix="admin-map"
           />
 
           <div className="flex gap-2">
