@@ -6,7 +6,7 @@ import { extractPhotoMeta, type PhotoMeta } from "@/lib/photoExif";
 
 export interface PhotoDraft {
   file: File;
-  previewUrl: string;
+  previewUrl: string; // object URL — callers revoke it on clear/replace
   hasGps: boolean;
 }
 
@@ -38,6 +38,9 @@ export default function MemoryPhotoInput({
   const [reading, setReading] = useState(false);
 
   const handleFile = async (file: File | undefined) => {
+    // Reset immediately so re-picking the same file re-fires change,
+    // even when validation rejects this one.
+    if (inputRef.current) inputRef.current.value = "";
     if (!file) return;
     const invalid = validateMemoryFile(file);
     if (invalid) {
@@ -58,7 +61,6 @@ export default function MemoryPhotoInput({
       );
     } finally {
       setReading(false);
-      if (inputRef.current) inputRef.current.value = "";
     }
   };
 
@@ -66,7 +68,7 @@ export default function MemoryPhotoInput({
 
   return (
     <div className="space-y-2">
-      <label className="block font-semibold">
+      <label htmlFor={`${idPrefix}-photo`} className="block font-semibold">
         Photo (optional) — GPS and time auto-fill
       </label>
       {error && (
@@ -114,7 +116,7 @@ export default function MemoryPhotoInput({
                   setError(null);
                   onClear();
                 }}
-                disabled={disabled}
+                disabled={disabled || reading}
                 className="border-2 border-black px-3 py-1 text-sm text-(--color-brand-red) disabled:opacity-50 cursor-pointer"
               >
                 Remove
