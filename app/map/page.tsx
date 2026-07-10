@@ -27,6 +27,14 @@ export default function MapPage() {
       });
   }, []);
 
+  // Deep link: /map?pin=<id> opens that pin. Read via window.location (not
+  // useSearchParams) — this page is fully client-side and this avoids the
+  // Suspense-boundary requirement.
+  useEffect(() => {
+    const pinId = new URLSearchParams(window.location.search).get("pin");
+    if (pinId) setOpenPinId(pinId);
+  }, []);
+
   if (!apiKey) {
     return (
       <main className="relative h-full overflow-hidden">
