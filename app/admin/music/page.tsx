@@ -16,6 +16,7 @@ export default function AdminMusicPage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [loading, setLoading] = useState(false);
   const [locationDrafts, setLocationDrafts] = useState<DraftPin[]>([]);
+  const [editorEpoch, setEditorEpoch] = useState(0);
   const [fetchingUrl, setFetchingUrl] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [mediaUrl, setMediaUrl] = useState("");
@@ -243,6 +244,7 @@ export default function AdminMusicPage() {
         }
       }
       setLocationDrafts([]);
+      setEditorEpoch((e) => e + 1); // remount the editor so its internal drafts reset
 
       if (failedPhotoPlaces.length > 0) {
         setMessage({
@@ -465,7 +467,7 @@ export default function AdminMusicPage() {
                 </p>
               </div>
 
-            <SongLocationsEditor songId={null} onDraftChange={setLocationDrafts} />
+            <SongLocationsEditor key={editorEpoch} songId={null} onDraftChange={setLocationDrafts} />
 
               <button
                 type="submit"
