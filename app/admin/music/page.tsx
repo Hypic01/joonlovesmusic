@@ -17,6 +17,7 @@ export default function AdminMusicPage() {
   const [loading, setLoading] = useState(false);
   const [locationDrafts, setLocationDrafts] = useState<DraftPin[]>([]);
   const [editorEpoch, setEditorEpoch] = useState(0);
+  const [hasStagedLocation, setHasStagedLocation] = useState(false);
   const [fetchingUrl, setFetchingUrl] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [mediaUrl, setMediaUrl] = useState("");
@@ -168,6 +169,13 @@ export default function AdminMusicPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (hasStagedLocation) {
+      setMessage({
+        type: "error",
+        text: "You have an unsaved location below — click “Save this location” (or clear it) before adding the song.",
+      });
+      return;
+    }
     setLoading(true);
     setMessage(null);
 
@@ -467,7 +475,12 @@ export default function AdminMusicPage() {
                 </p>
               </div>
 
-            <SongLocationsEditor key={editorEpoch} songId={null} onDraftChange={setLocationDrafts} />
+            <SongLocationsEditor
+              key={editorEpoch}
+              songId={null}
+              onDraftChange={setLocationDrafts}
+              onStagedChange={setHasStagedLocation}
+            />
 
               <button
                 type="submit"

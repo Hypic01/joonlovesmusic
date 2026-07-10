@@ -25,9 +25,13 @@ interface SongLocationsEditorProps {
   songId: string | null;
   song?: Song;
   onDraftChange?: (drafts: DraftPin[]) => void;
+  /** Fires when place/photo/moment/note are staged here but not yet saved as a
+      location — host forms block their own submit instead of silently
+      discarding this state. */
+  onStagedChange?: (hasStaged: boolean) => void;
 }
 
-function Inner({ songId, song, onDraftChange }: SongLocationsEditorProps) {
+function Inner({ songId, song, onDraftChange, onStagedChange }: SongLocationsEditorProps) {
   const [pins, setPins] = useState<MapPinWithSong[]>([]);
   const [pinsLoaded, setPinsLoaded] = useState(false);
   const [drafts, setDrafts] = useState<DraftPin[]>([]);
@@ -65,6 +69,12 @@ function Inner({ songId, song, onDraftChange }: SongLocationsEditorProps) {
   useEffect(() => {
     if (!songId) onDraftChange?.(drafts);
   }, [drafts, songId, onDraftChange]);
+
+  const hasStaged = pending !== null || photo !== null || takenAt !== "" || note !== "";
+
+  useEffect(() => {
+    onStagedChange?.(hasStaged);
+  }, [hasStaged, onStagedChange]);
 
   const reverseGeocode = useCallback(
     async (lat: number, lng: number): Promise<PlaceResult> => {
@@ -236,10 +246,15 @@ function Inner({ songId, song, onDraftChange }: SongLocationsEditorProps) {
         type="button"
         onClick={addPending}
         disabled={saving || !pending}
-        className="border-2 border-black px-3 py-1 disabled:opacity-50"
+        className="border-2 border-black bg-(--color-brand-red) px-4 py-2 font-semibold text-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {saving ? "Adding…" : "Add location"}
+        {saving ? "Saving location…" : "Save this location"}
       </button>
+      {hasStaged && (
+        <p className="text-sm font-semibold text-(--color-brand-red)">
+          Not saved yet — click &ldquo;Save this location&rdquo; to keep it with this song.
+        </p>
+      )}
 
       <div className="h-64 border-2 border-black">
         <MusicMap

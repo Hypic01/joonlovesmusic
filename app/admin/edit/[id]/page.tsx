@@ -16,6 +16,7 @@ export default function EditSongPage() {
   const id = params.id as string;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [hasStagedLocation, setHasStagedLocation] = useState(false);
   const [fetchingUrl, setFetchingUrl] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [song, setSong] = useState<Song | null>(null);
@@ -220,6 +221,13 @@ export default function EditSongPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (hasStagedLocation) {
+      setMessage({
+        type: "error",
+        text: "You have an unsaved location below — click “Save this location” (or clear it) before saving changes.",
+      });
+      return;
+    }
     setSaving(true);
     setMessage(null);
 
@@ -500,7 +508,9 @@ export default function EditSongPage() {
               </div>
             )}
 
-            {song && <SongLocationsEditor songId={id} song={song} />}
+            {song && (
+              <SongLocationsEditor songId={id} song={song} onStagedChange={setHasStagedLocation} />
+            )}
 
             <button
               type="submit"
