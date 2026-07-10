@@ -180,7 +180,7 @@ export default function MusicMap({
                 src={activePin.photo_url}
                 alt={`Memory at ${activePin.place_name}`}
                 loading="lazy"
-                className="block max-h-64 w-full border-2 border-black object-cover"
+                className="mx-auto block max-h-80 w-auto max-w-full border-2 border-black"
               />
             )}
             <p className="text-[28px] font-bold">{activePin.place_name}</p>
