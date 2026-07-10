@@ -5,10 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
-import type { Song, Award, RatingHistory, CommentHistory, WrappedEntry } from "@/types/database";
+import type { Song, Award, RatingHistory, CommentHistory, WrappedEntry, MapPin } from "@/types/database";
 import { getRatingColor, displayRating } from "@/lib/ratingColors";
 import WrappedBadge from "@/app/components/WrappedBadge";
 import { buildWrappedFilter } from "@/lib/wrapped";
+import MemoryCard from "@/app/components/MemoryCard";
 
 // Format release date based on precision (YYYY, YYYY-MM, or YYYY-MM-DD)
 function formatReleaseDate(dateStr: string): string {
@@ -46,6 +47,7 @@ export default function SongDetailPage() {
   const [song, setSong] = useState<Song | null>(null);
   const [awards, setAwards] = useState<Award[]>([]);
   const [wrappedEntries, setWrappedEntries] = useState<WrappedEntry[]>([]);
+  const [memoryPins, setMemoryPins] = useState<MapPin[]>([]);
   const [ratingHistory, setRatingHistory] = useState<RatingHistory[]>([]);
   const [commentHistory, setCommentHistory] = useState<CommentHistory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,12 +70,14 @@ export default function SongDetailPage() {
           { data: songData, error: songError },
           { data: awardsData, error: awardsError },
           { data: historyData, error: historyError },
-          { data: commentHistoryData, error: commentHistoryError }
+          { data: commentHistoryData, error: commentHistoryError },
+          { data: pinsData }
         ] = await Promise.all([
           supabase.from("songs").select("*").eq("id", id).single(),
           supabase.from("awards").select("*").eq("song_id", id),
           supabase.from("rating_history").select("*").eq("song_id", id).order("changed_at", { ascending: false }),
-          supabase.from("comment_history").select("*").eq("song_id", id).order("changed_at", { ascending: false })
+          supabase.from("comment_history").select("*").eq("song_id", id).order("changed_at", { ascending: false }),
+          supabase.from("map_pins").select("*").eq("song_id", id)
         ]);
 
         // Check for errors
@@ -88,6 +92,15 @@ export default function SongDetailPage() {
         setAwards(awardsData || []);
         setRatingHistory(historyData || []);
         setCommentHistory(commentHistoryData || []);
+
+        // Memories: pins that carry a photo or a moment, newest moment first.
+        // taken_at is wall-clock ISO-ish and created_at is ISO — string compare orders both.
+        const memories = ((pinsData as MapPin[]) || [])
+          .filter((p) => p.photo_url || p.taken_at)
+          .sort((a, b) =>
+            (b.taken_at ?? b.created_at).localeCompare(a.taken_at ?? a.created_at)
+          );
+        setMemoryPins(memories);
 
         // Wrapped honors depend on the song row's identifiers, so this runs
         // after the parallel batch. Matches by track id OR ISRC (version-proof).
@@ -430,6 +443,18 @@ export default function SongDetailPage() {
                         {award.position}
                       </p>
                     </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Memories Section — pins with a photo or a moment */}
+            {memoryPins.length > 0 && (
+              <div className="mb-12">
+                <h2 className="text-[28px] font-bold mb-6">Memories</h2>
+                <div className="flex flex-wrap gap-4">
+                  {memoryPins.map((pin) => (
+                    <MemoryCard key={pin.id} pin={pin} />
                   ))}
                 </div>
               </div>
