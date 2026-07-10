@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { Map, AdvancedMarker, Pin, InfoWindow, useMap, type MapMouseEvent } from "@vis.gl/react-google-maps";
 import type { MapPinWithSong } from "@/lib/mapSearch";
+import { formatMoment } from "@/lib/formatMoment";
 import SongPopupCard from "./SongPopupCard";
 
 const mapId = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || undefined;
@@ -132,7 +133,20 @@ export default function MusicMap({
           position={{ lat: pin.lat, lng: pin.lng }}
           onClick={() => setOpen(pin.id)}
         >
-          <Pin background="#ff4242" borderColor="#000000" glyphColor="#ffffff" />
+          {pin.photo_thumb_url ? (
+            <div className="border-2 border-black bg-white p-[3px] shadow-[0_3px_0_rgba(0,0,0,0.25)] transition-transform duration-150 hover:scale-110">
+              {/* Plain <img>: marker thumbs are tiny, and next/image would need the
+                  storage host in remotePatterns. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={pin.photo_thumb_url}
+                alt={`Memory at ${pin.place_name}`}
+                className="block h-11 w-11 object-cover"
+              />
+            </div>
+          ) : (
+            <Pin background="#ff4242" borderColor="#000000" glyphColor="#ffffff" />
+          )}
         </AdvancedMarker>
       ))}
 
@@ -160,7 +174,19 @@ export default function MusicMap({
           maxWidth={560}
         >
           <div className="space-y-2" style={{ fontFamily: SITE_FONT }}>
+            {activePin.photo_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={activePin.photo_url}
+                alt={`Memory at ${activePin.place_name}`}
+                loading="lazy"
+                className="block max-h-64 w-full border-2 border-black object-cover"
+              />
+            )}
             <p className="text-[28px] font-bold">{activePin.place_name}</p>
+            {formatMoment(activePin.taken_at) && (
+              <p className="text-[18px]">{formatMoment(activePin.taken_at)}</p>
+            )}
             {activePin.note && <p className="text-[20px] opacity-70">{activePin.note}</p>}
             <SongPopupCard song={activePin.songs} />
           </div>
