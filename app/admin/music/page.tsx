@@ -218,7 +218,9 @@ export default function AdminMusicPage() {
 
       // Save any location pins attached during creation. A pin whose photo
       // fails to upload is skipped entirely (nothing half-written) — the song
-      // itself is already saved; re-add that location from the edit page.
+      // itself is already saved; failures are collected so the final message
+      // can't be clobbered by the success banner.
+      const failedPhotoPlaces: string[] = [];
       if (inserted && locationDrafts.length > 0) {
         for (const d of locationDrafts) {
           const { photoFile, ...pinFields } = d;
@@ -227,12 +229,9 @@ export default function AdminMusicPage() {
             try {
               photoUrls = await uploadMemoryPhoto(photoFile);
             } catch (e) {
-              setMessage({
-                type: "error",
-                text: `Song saved, but the photo for ${d.place_name} failed to upload (${
-                  e instanceof Error ? e.message : "upload error"
-                }). Re-add that location from the edit page.`,
-              });
+              failedPhotoPlaces.push(
+                `${d.place_name} (${e instanceof Error ? e.message : "upload error"})`
+              );
               continue;
             }
           }
@@ -245,7 +244,16 @@ export default function AdminMusicPage() {
       }
       setLocationDrafts([]);
 
-      setMessage({ type: "success", text: "Song added successfully!" });
+      if (failedPhotoPlaces.length > 0) {
+        setMessage({
+          type: "error",
+          text: `Song saved, but the photo upload failed for ${failedPhotoPlaces.join(
+            "; "
+          )}. Those locations were skipped — re-add them from the edit page.`,
+        });
+      } else {
+        setMessage({ type: "success", text: "Song added successfully!" });
+      }
       setFormData({
         title: "",
         artist: "",
