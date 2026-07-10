@@ -8,7 +8,10 @@ import Navbar from "../components/Navbar";
 import MusicMap from "../components/MusicMap";
 import MapSearch from "../components/MapSearch";
 import PinTree from "../components/PinTree";
+import PinList from "../components/PinList";
+import SortDropdown from "../components/SortDropdown";
 import { supabase } from "@/lib/supabase";
+import { sortPinsForList, PIN_SORT_OPTIONS, type PinListSort } from "@/lib/sortPins";
 import type { MapPinWithSong } from "@/lib/mapSearch";
 
 const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
@@ -17,6 +20,8 @@ export default function MapPage() {
   const [pins, setPins] = useState<MapPinWithSong[]>([]);
   const [openPinId, setOpenPinId] = useState<string | null>(null);
   const [filterIds, setFilterIds] = useState<string[] | null>(null);
+  const [panelView, setPanelView] = useState<"tree" | "list">("tree");
+  const [listSort, setListSort] = useState<PinListSort>("newest");
 
   useEffect(() => {
     supabase
@@ -77,14 +82,48 @@ export default function MapPage() {
               <MusicMap pins={visiblePins} openPinId={openPinId} onOpenPinChange={setOpenPinId} />
             </div>
 
-            {/* RIGHT: categorized pin list — Country -> City -> Place */}
+            {/* RIGHT: pins panel — categorized tree, or a flat sortable list */}
             <div className="flex min-h-0 flex-col gap-3 lg:overflow-hidden">
-              <h2 className="text-[24px] font-bold">Pins ({pins.length})</h2>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-[24px] font-bold">Pins ({pins.length})</h2>
+                <div className="flex gap-2">
+                  {(["tree", "list"] as const).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setPanelView(v)}
+                      className={`px-3 py-2 text-[14px] border-2 border-black font-semibold cursor-pointer ${
+                        panelView === v
+                          ? "bg-(--color-brand-red) text-white"
+                          : "bg-white hover:border-(--color-brand-red)"
+                      }`}
+                    >
+                      {v === "tree" ? "Tree" : "List"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {panelView === "list" && (
+                <SortDropdown
+                  options={PIN_SORT_OPTIONS}
+                  value={listSort}
+                  onChange={(v) => setListSort(v as PinListSort)}
+                />
+              )}
               {pins.length === 0 ? (
                 <p className="text-[16px] opacity-70">No pins yet</p>
-              ) : (
+              ) : panelView === "tree" ? (
                 <PinTree
                   pins={pins}
+                  activePinId={openPinId}
+                  onFocus={(p) => {
+                    setFilterIds(null);
+                    setOpenPinId(p.id);
+                  }}
+                />
+              ) : (
+                <PinList
+                  pins={sortPinsForList(pins, listSort)}
                   activePinId={openPinId}
                   onFocus={(p) => {
                     setFilterIds(null);
