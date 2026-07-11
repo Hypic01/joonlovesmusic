@@ -72,7 +72,7 @@ export default function WhenToListenWhatPage() {
                   <h2 className="text-[24px] md:text-[32px] font-bold mb-2">
                     {post.title}
                   </h2>
-                  <p className="text-[14px] md:text-[16px] opacity-50 mb-3">
+                  <p className="text-[14px] md:text-[16px] opacity-60 mb-3">
                     {formatDate(post.created_at)}
                   </p>
                   {post.preview && (
@@ -81,7 +81,7 @@ export default function WhenToListenWhatPage() {
                     </p>
                   )}
                   {post.song_ids && post.song_ids.length > 0 && (
-                    <p className="text-[14px] mt-3 opacity-50">
+                    <p className="text-[14px] mt-3 opacity-60">
                       {post.song_ids.length} song
                       {post.song_ids.length > 1 ? "s" : ""} featured
                     </p>

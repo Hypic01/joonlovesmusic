@@ -56,7 +56,7 @@ export default function SpotifyTrackRow({
       <div className="flex-1 min-w-0">
         <h3 className="text-[18px] lg:text-[28px] font-bold leading-tight truncate">{title}</h3>
         <div className="text-[14px] lg:text-[18px] opacity-80 truncate">{artist}</div>
-        {meta && <div className="text-[12px] lg:text-[14px] opacity-50 truncate">{meta}</div>}
+        {meta && <div className="text-[14px] opacity-60 truncate">{meta}</div>}
       </div>
 
       {rated ? (

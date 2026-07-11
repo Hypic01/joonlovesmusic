@@ -135,7 +135,7 @@ export default function BlogPostPage() {
           <h1 className="text-[36px] md:text-[48px] lg:text-[56px] font-black mb-2">
             {post.title}
           </h1>
-          <p className="text-[16px] md:text-[18px] opacity-50 mb-8">
+          <p className="text-[16px] md:text-[18px] opacity-60 mb-8">
             {formatDate(post.created_at)}
           </p>
 

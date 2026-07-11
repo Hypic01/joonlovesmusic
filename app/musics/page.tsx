@@ -329,7 +329,7 @@ function MusicsContent() {
                     <button
                       onClick={() => goToPage(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="px-2 sm:px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer text-[14px] sm:text-[16px]"
+                      className="px-2 sm:px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer text-[16px]"
                     >
                       Prev
                     </button>
@@ -360,12 +360,12 @@ function MusicsContent() {
                         <>
                           <button
                             onClick={() => goToPage(1)}
-                            className="w-8 h-8 border-2 border-black bg-white hover:bg-neutral-100 font-semibold cursor-pointer text-[14px]"
+                            className="w-8 h-8 border-2 border-black bg-white hover:bg-neutral-100 font-semibold cursor-pointer text-[16px]"
                           >
                             1
                           </button>
                           {currentPage > 3 && (
-                            <span className="px-1 text-[14px]">...</span>
+                            <span className="px-1 text-[16px]">...</span>
                           )}
                         </>
                       )}
@@ -377,7 +377,7 @@ function MusicsContent() {
                           <button
                             key={page}
                             onClick={() => goToPage(page)}
-                            className={`w-8 h-8 border-2 border-black font-semibold cursor-pointer text-[14px] ${
+                            className={`w-8 h-8 border-2 border-black font-semibold cursor-pointer text-[16px] ${
                               currentPage === page
                                 ? "bg-(--color-brand-red) text-white"
                                 : "bg-white hover:bg-neutral-100"
@@ -391,11 +391,11 @@ function MusicsContent() {
                       {currentPage < totalPages - 1 && (
                         <>
                           {currentPage < totalPages - 2 && (
-                            <span className="px-1 text-[14px]">...</span>
+                            <span className="px-1 text-[16px]">...</span>
                           )}
                           <button
                             onClick={() => goToPage(totalPages)}
-                            className="w-8 h-8 border-2 border-black bg-white hover:bg-neutral-100 font-semibold cursor-pointer text-[14px]"
+                            className="w-8 h-8 border-2 border-black bg-white hover:bg-neutral-100 font-semibold cursor-pointer text-[16px]"
                           >
                             {totalPages}
                           </button>
@@ -407,7 +407,7 @@ function MusicsContent() {
                     <button
                       onClick={() => goToPage(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="px-2 sm:px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer text-[14px] sm:text-[16px]"
+                      className="px-2 sm:px-4 py-2 border-2 border-black bg-white hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed font-semibold cursor-pointer text-[16px]"
                     >
                       Next
                     </button>

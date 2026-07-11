@@ -251,7 +251,7 @@ export default function SongDetailPage() {
                       <span className="text-[40px] font-black">{displayRating(song.rating)}</span>
                     </div>
                     {song.updated_at && (
-                      <div className="text-[12px] opacity-60 mt-1 text-center">
+                      <div className="text-[14px] opacity-60 mt-1 text-center">
                         {new Date(song.updated_at).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -370,7 +370,7 @@ export default function SongDetailPage() {
                     </div>
                     {/* Last Updated */}
                     {song.updated_at && (
-                      <div className="text-[12px] lg:text-[14px] opacity-60 mt-2 text-center">
+                      <div className="text-[14px] opacity-60 mt-2 text-center">
                         Last updated:<br />
                         {new Date(song.updated_at).toLocaleDateString('en-US', {
                           year: 'numeric',

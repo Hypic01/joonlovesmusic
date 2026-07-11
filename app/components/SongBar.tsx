@@ -64,11 +64,11 @@ export default function SongBar({
             {song.title}
           </h3>
           {song.album_name && (
-            <p className="text-[14px] font-normal opacity-70 truncate">
+            <p className="text-[16px] font-normal opacity-70 truncate">
               {song.album_name}
             </p>
           )}
-          <div className="text-[14px] truncate">{song.artist}</div>
+          <div className="text-[16px] truncate">{song.artist}</div>
         </div>
       </div>
 
@@ -103,7 +103,7 @@ export default function SongBar({
           </h3>
           {song.album_name && (
             <span
-              className="block max-w-fit text-[14px] lg:text-[18px] font-normal opacity-70 hover:underline cursor-pointer truncate"
+              className="block max-w-fit text-[16px] lg:text-[18px] font-normal opacity-70 hover:underline cursor-pointer truncate"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();

@@ -45,7 +45,7 @@ export default function NowPlayingBanner({ initial }: NowPlayingBannerProps) {
         <span
           className={`w-3 h-3 ${track ? "bg-(--color-brand-red) animate-pulse" : "bg-neutral-300"}`}
         />
-        <span className="text-[12px] lg:text-[14px] font-bold uppercase tracking-wide">
+        <span className="text-[14px] font-bold uppercase tracking-wide">
           now playing
         </span>
       </div>
@@ -80,7 +80,7 @@ export default function NowPlayingBanner({ initial }: NowPlayingBannerProps) {
                 <div className="text-[16px] lg:text-[20px] font-bold truncate">{track.title}</div>
               </a>
             )}
-            <div className="text-[13px] lg:text-[15px] opacity-80 truncate">{track.artist}</div>
+            <div className="text-[14px] lg:text-[15px] opacity-80 truncate">{track.artist}</div>
           </div>
 
           {track.rated && (

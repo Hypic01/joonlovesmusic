@@ -112,7 +112,7 @@ export default function ArtistPage() {
                     >
                       <span className="text-[40px] font-black">{averageRating}</span>
                     </div>
-                    <div className="text-[12px] opacity-60 mt-1 text-center">
+                    <div className="text-[14px] opacity-60 mt-1 text-center">
                       Avg Rating
                     </div>
                   </div>
@@ -168,7 +168,7 @@ export default function ArtistPage() {
                     >
                       <span className="text-[48px] lg:text-[64px] font-black">{averageRating}</span>
                     </div>
-                    <div className="text-[12px] lg:text-[14px] opacity-60 mt-2 text-center">
+                    <div className="text-[14px] opacity-60 mt-2 text-center">
                       Average Rating
                     </div>
                   </div>
